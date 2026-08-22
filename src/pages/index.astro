@@ -1,0 +1,353 @@
+---
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
+const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const { data: herramientas } = await supabase
+  .from('herramientas')
+  .select('*')
+  .order('estrellas', { ascending: false });
+
+const categorias = ['Todas', ...new Set((herramientas || []).map(h => h.categoria).filter(Boolean))];
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Directorio Self-Hosted vs SaaS</title>
+    <style>
+      :root {
+        --bg: #0b1120;
+        --card-bg: #1e293b;
+        --card-border: #334155;
+        --primary: #38bdf8;
+        --primary-glow: rgba(56, 189, 248, 0.2);
+        --text: #e2e8f0;
+        --text-muted: #94a3b8;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+      }
+
+      /* Cabecera */
+      header {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        background: linear-gradient(to right, #38bdf8, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0 0 0.75rem 0;
+      }
+      .subtitulo {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto 2rem auto;
+        line-height: 1.5;
+      }
+
+      /* Contenedor del Buscador */
+      .search-wrapper {
+        max-width: 680px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .search-input-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 1.25rem;
+        width: 20px;
+        height: 20px;
+        color: var(--text-muted);
+        pointer-events: none;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3.25rem;
+        background: #131d31;
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        color: #ffffff;
+        font-size: 1rem;
+        outline: none;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+      }
+
+      .search-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px var(--primary-glow), 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+        background: #17233d;
+      }
+
+      .search-input::placeholder {
+        color: #64748b;
+      }
+
+      /* Filtros en píldoras */
+      .filter-pills {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        background: #1e293b;
+        border: 1px solid var(--card-border);
+        color: var(--text-muted);
+        padding: 0.4rem 0.9rem;
+        border-radius: 9999px;
+        font-size: 0.82rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .pill:hover {
+        background: #28364d;
+        color: #ffffff;
+      }
+
+      .pill.active {
+        background: #0284c7;
+        color: #ffffff;
+        border-color: #38bdf8;
+      }
+
+      /* Contador */
+      .counter {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+      }
+
+      /* Grid de tarjetas */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        border-color: #475569;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      }
+
+      .badge {
+        display: inline-block;
+        background: #0369a1;
+        color: #bae6fd;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+        margin-bottom: 0.75rem;
+        width: fit-content;
+      }
+
+      h2 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #ffffff;
+      }
+
+      .reemplaza {
+        color: #cbd5e1;
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+      }
+      .reemplaza strong { color: #f59e0b; }
+
+      .resumen {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 1.25rem;
+      }
+
+      .meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--card-border);
+        padding-top: 1rem;
+      }
+
+      .estrellas {
+        color: #facc15;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .btn {
+        color: var(--primary);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: gap 0.15s ease;
+      }
+
+      .btn:hover {
+        text-decoration: underline;
+        gap: 0.5rem;
+      }
+
+      .no-results {
+        display: none;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        grid-column: 1 / -1;
+        padding: 4rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Directorio Open-Source Self-Hosted</h1>
+      <p class="subtitulo">Alternativas privadas y gratuitas a herramientas de pago, analizadas localmente por IA.</p>
+      
+      <div class="search-wrapper">
+        <div class="search-input-group">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input 
+            type="text" 
+            id="buscador" 
+            class="search-input" 
+            placeholder="Buscar por herramienta, alternativa o tecnología (ej. Photos, Notion, n8n)..." 
+          />
+        </div>
+
+        <div class="filter-pills" id="contenedor-filtros">
+          {categorias.map((cat) => (
+            <button class={`pill ${cat === 'Todas' ? 'active' : ''}`} data-cat={cat.toLowerCase()}>
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+    </header>
+
+    <div class="counter" id="contador-resultados">
+      Mostrando {herramientas ? herramientas.length : 0} herramientas
+    </div>
+
+    <main class="grid" id="contenedor-cards">
+      {herramientas && herramientas.map((item) => (
+        <article 
+          class="card tool-card"
+          data-nombre={(item.nombre_software || '').toLowerCase()}
+          data-sustituye={(item.sustituye_a || '').toLowerCase()}
+          data-categoria={(item.categoria || '').toLowerCase()}
+          data-resumen={(item.resumen || '').toLowerCase()}
+        >
+          <div>
+            <span class="badge">{item.categoria}</span>
+            <h2>{item.nombre_software}</h2>
+            <p class="reemplaza"><strong>Sustituye a:</strong> {item.sustituye_a}</p>
+            <p class="resumen">{item.resumen}</p>
+          </div>
+          <div class="meta">
+            <span class="estrellas">★ {item.estrellas}</span>
+            <a href={`/herramienta/${item.id}`} class="btn">
+              Ver análisis <span>&rarr;</span>
+            </a>
+          </div>
+        </article>
+      ))}
+      <div id="sin-resultados" class="no-results">
+        🔍 No se encontraron herramientas que coincidan con tu búsqueda.
+      </div>
+    </main>
+
+    <script>
+      const buscador = document.getElementById('buscador') as HTMLInputElement;
+      const cards = document.querySelectorAll<HTMLElement>('.tool-card');
+      const noResults = document.getElementById('sin-resultados');
+      const pills = document.querySelectorAll<HTMLButtonElement>('.pill');
+      const contador = document.getElementById('contador-resultados');
+
+      let currentCategory = 'todas';
+
+      function filtrar() {
+        const query = buscador.value.toLowerCase().trim();
+        let visibles = 0;
+
+        cards.forEach((card) => {
+          const matchText = 
+            card.dataset.nombre?.includes(query) ||
+            card.dataset.sustituye?.includes(query) ||
+            card.dataset.categoria?.includes(query) ||
+            card.dataset.resumen?.includes(query);
+
+          const matchCat = currentCategory === 'todas' || card.dataset.categoria === currentCategory;
+
+          if (matchText && matchCat) {
+            card.style.display = 'flex';
+            visibles++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        if (noResults) noResults.style.display = visibles === 0 ? 'block' : 'none';
+        if (contador) contador.textContent = `Mostrando ${visibles} herramienta${visibles === 1 ? '' : 's'}`;
+      }
+
+      buscador?.addEventListener('input', filtrar);
+
+      pills.forEach((pill) => {
+        pill.addEventListener('click', () => {
+          pills.forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          currentCategory = pill.dataset.cat || 'todas';
+          filtrar();
+        });
+      });
+    </script>
+  </body>
+</html>

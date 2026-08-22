@@ -1,0 +1,96 @@
+---
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
+const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+export async function getStaticPaths() {
+  const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
+  const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
+  const client = createClient(supabaseUrl, supabaseKey);
+
+  const { data: herramientas } = await client
+    .from('herramientas')
+    .select('*');
+
+  return (herramientas || []).map((item) => ({
+    params: { id: String(item.id) },
+    props: { item },
+  }));
+}
+
+const { item } = Astro.props;
+
+if (!item) {
+  return Astro.redirect('/');
+}
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{item.nombre_software} - Alternativa a {item.sustituye_a}</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+      }
+      a.volver { color: #38bdf8; text-decoration: none; display: inline-block; margin-bottom: 1.5rem; }
+      .badge { background: #0369a1; color: #bae6fd; font-size: 0.8rem; font-weight: 600; padding: 0.3rem 0.8rem; border-radius: 4px; display: inline-block; }
+      h1 { font-size: 2.2rem; color: #ffffff; margin: 1rem 0 0.5rem 0; }
+      .sub { color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem; }
+      .sub strong { color: #f59e0b; }
+      .box { background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; }
+      h2 { color: #38bdf8; font-size: 1.2rem; margin-top: 0; }
+      ul { padding-left: 1.2rem; }
+      li { margin-bottom: 0.5rem; color: #cbd5e1; }
+      .dificultad { margin-top: 1rem; color: #94a3b8; font-size: 0.95rem; }
+      .dificultad strong { color: #38bdf8; }
+      .btn {
+        display: inline-block;
+        background: #0284c7;
+        color: white;
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        margin-top: 0.5rem;
+      }
+      .btn:hover { background: #0369a1; }
+    </style>
+  </head>
+  <body>
+    <a href="/" class="volver">&larr; Volver al catálogo</a>
+    
+    <div>
+      <span class="badge">{item.categoria}</span>
+      <h1>{item.nombre_software}</h1>
+      <p class="sub">Alternativa open-source a <strong>{item.sustituye_a}</strong> · ⭐ {item.estrellas} estrellas</p>
+    </div>
+
+    <div class="box">
+      <h2>Descripción y propósito</h2>
+      <p>{item.resumen}</p>
+    </div>
+
+    <div class="box">
+      <h2>Ventajas frente al software comercial</h2>
+      <ul>
+        {item.ventajas_frente_saas && item.ventajas_frente_saas.map((v: string) => (
+          <li>{v}</li>
+        ))}
+      </ul>
+      <p class="dificultad">Dificultad de despliegue Docker: <strong>{item.dificultad_docker}</strong></p>
+    </div>
+
+    <a href={item.url_github} target="_blank" rel="noopener noreferrer" class="btn">
+      Ver código en GitHub &rarr;
+    </a>
+  </body>
+</html>

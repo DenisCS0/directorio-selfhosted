@@ -1,0 +1,171 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sobre el Proyecto | SelfHostDeck</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #0f172a;
+      color: #e2e8f0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1.25rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      margin: 10vh auto auto auto;
+    }
+
+    .volver {
+      display: inline-block;
+      color: #38bdf8 !important;
+      text-decoration: none;
+      font-weight: 500;
+      margin-bottom: 2rem;
+      transition: opacity 0.2s;
+    }
+    .volver:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.025em;
+    }
+
+    .sub {
+      color: #94a3b8;
+      font-size: 1.05rem;
+      margin-bottom: 2rem;
+    }
+
+    .box {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .box h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    .box p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 0.75rem;
+    }
+
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .tech-tag {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #38bdf8;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+    }
+
+    .btn {
+      display: inline-block;
+      background: #0284c7;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 0.65rem 1.25rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      transition: background-color 0.2s;
+    }
+    .btn:hover {
+      background: #0369a1;
+    }
+
+    .btn-linkedin {
+      background: #0a66c2;
+    }
+    .btn-linkedin:hover {
+      background: #004182;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="container">
+    <a href="/" class="volver">&larr; Volver al catálogo</a>
+
+    <h1>Sobre el Proyecto</h1>
+    <p class="sub">Misión, arquitectura técnica y soberanía digital detrás del catálogo.</p>
+
+    <div class="box">
+      <h2>¿Qué es SelfHostDeck?</h2>
+      <p>SelfHostDeck es un directorio automatizado y curado diseñado para descubrir alternativas de código abierto y autohospedadas a herramientas comerciales privativas (SaaS).</p>
+      <p style="margin-bottom: 0;">El objetivo es facilitar la soberanía digital, la reducción de costes recurrentes y el control absoluto de los datos tanto para entusiastas del autohospedaje como para entornos profesionales.</p>
+    </div>
+
+    <div class="box">
+      <h2>Cómo funciona</h2>
+      <p style="margin-bottom: 0;">La plataforma recopila información técnica en tiempo real desde repositorios oficiales de GitHub, analiza su caso de uso mediante modelos locales de IA para catalogar su alternativa comercial directa y genera recetas de despliegue rápido listas para usar con Docker Compose.</p>
+    </div>
+
+    <div class="box">
+      <h2>Arquitectura y Stack Técnico</h2>
+      <p>Construido con herramientas modernas para máxima velocidad, accesibilidad y rendimiento estático:</p>
+      <div class="tech-stack">
+        <span class="tech-tag">Astro</span>
+        <span class="tech-tag">TypeScript</span>
+        <span class="tech-tag">Supabase (PostgreSQL)</span>
+        <span class="tech-tag">Python Pipeline</span>
+        <span class="tech-tag">Docker</span>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>Creador del proyecto</h2>
+      <p>Desarrollado y mantenido como iniciativa técnica para promover el ecosistema de código abierto y la soberanía de datos.</p>
+      <a 
+        href="https://www.linkedin.com/in/denis-campayo-dev" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        class="btn btn-linkedin"
+      >
+        Ver perfil en LinkedIn &rarr;
+      </a>
+    </div>
+  </main>
+
+</body>
+</html>

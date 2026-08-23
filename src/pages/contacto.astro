@@ -1,0 +1,162 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contacto y Sugerencias | SelfHostDeck</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #0f172a;
+      color: #e2e8f0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1.25rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      margin: 10vh auto auto auto; /* 10vh arriba le da la altura natural perfecta */
+   
+    }
+
+    .volver {
+      display: inline-block;
+      color: #38bdf8 !important;
+      text-decoration: none;
+      font-weight: 500;
+      margin-bottom: 2rem;
+      transition: opacity 0.2s;
+    }
+    .volver:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.025em;
+    }
+
+    .sub {
+      color: #94a3b8;
+      font-size: 1.05rem;
+      margin-bottom: 2rem;
+    }
+
+    .box {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .box h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    .box p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .box p.single {
+      margin-bottom: 0;
+    }
+
+    .box a.mail {
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .box a.mail:hover {
+      text-decoration: underline;
+    }
+
+    .btn {
+      display: inline-block;
+      background: #0284c7;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 0.65rem 1.25rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+    .btn:hover {
+      background: #0369a1;
+    }
+    .btn-linkedin {
+      display: inline-block;
+      background: #0a66c2;
+      color: #ffffff;
+      text-decoration: none;
+      padding: 0.65rem 1.25rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+    .btn-linkedin:hover {
+      background: #004182;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="container">
+    <a href="/" class="volver">&larr; Volver al catálogo</a>
+
+    <h1>Contacto y Sugerencias</h1>
+    <p class="sub">¿Conoces un proyecto open-source que deba estar indexado o tienes propuestas de mejora?</p>
+
+    <div class="box">
+      <h2>Sugerir una herramienta</h2>
+      <p>Puedes proponer nuevos repositorios o reportar incidencias directamente en GitHub.</p>
+      <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="btn">
+        Abrir propuesta en GitHub &rarr;
+      </a>
+    </div>
+
+    <div class="box">
+      <h2>Contacto directo</h2>
+      <p class="single">Para consultas generales o dudas técnicas: <a href="mailto:contacto@selfhostdeck.com" class="mail">contacto@selfhostdeck.com</a></p>
+    </div>
+    <div class="box">
+      <h2>Perfil profesional</h2>
+      <p>Conecta para colaboraciones, networking o proyectos profesionales.</p>
+      <a 
+        href="https://www.linkedin.com/in/denis-campayo-dev" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        class="btn-linkedin"
+      >
+        Ver perfil en LinkedIn &rarr;
+      </a>
+    </div>
+  </main>
+
+</body>
+</html>

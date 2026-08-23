@@ -1,10 +1,6 @@
 ---
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
-const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 export async function getStaticPaths() {
   const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
   const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
@@ -25,16 +21,39 @@ const { item } = Astro.props;
 if (!item) {
   return Astro.redirect('/');
 }
+
+// Función para asignar paleta de colores según la dificultad
+const getDifficultyStyle = (diff: string = '') => {
+  const d = diff.toLowerCase();
+  if (d.includes('fácil') || d.includes('facil') || d.includes('baja') || d.includes('easy')) {
+    return { bg: '#052e16', text: '#4ade80', border: '#15803d' };
+  }
+  if (d.includes('media') || d.includes('medium')) {
+    return { bg: '#451a03', text: '#facc15', border: '#b45309' };
+  }
+  if (d.includes('alta') || d.includes('avanzada') || d.includes('difícil') || d.includes('dificil') || d.includes('hard')) {
+    return { bg: '#450a0a', text: '#f87171', border: '#b91c1c' };
+  }
+  return { bg: '#1e293b', text: '#38bdf8', border: '#334155' };
+};
+
+const diffStyle = getDifficultyStyle(item.dificultad_docker || '');
 ---
 
+<!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{item.nombre} - Alternativa a {item.saas_alternativa}</title>
+    <title>{item.nombre} - Alternativa a {item.saas_alternativa} | SelfHostDeck</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
       body {
-        font-family: system-ui, -apple-system, sans-serif;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         background: #0f172a;
         color: #e2e8f0;
         max-width: 800px;
@@ -42,54 +61,80 @@ if (!item) {
         padding: 3rem 1.5rem;
         line-height: 1.6;
       }
+
       a.volver {
         color: #38bdf8;
         text-decoration: none;
         display: inline-block;
         margin-bottom: 1.5rem;
         font-weight: 500;
+        transition: opacity 0.2s;
       }
-      a.volver:hover { opacity: 0.8; }
-      
+      a.volver:hover { 
+        opacity: 0.8; 
+        text-decoration: underline;
+      }
+
       .tag-group {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.6rem;
         align-items: center;
         flex-wrap: wrap;
       }
+
       .badge {
         background: #0369a1;
         color: #bae6fd;
         font-size: 0.8rem;
         font-weight: 600;
         padding: 0.3rem 0.8rem;
-        border-radius: 4px;
-        display: inline-block;
+        border-radius: 6px;
       }
-      .badge-diff {
-        background: #1e293b;
-        border: 1px solid #334155;
-        color: #94a3b8;
-        font-size: 0.8rem;
-        font-weight: 500;
-        padding: 0.3rem 0.8rem;
-        border-radius: 4px;
-      }
-      .badge-diff strong { color: #38bdf8; }
 
-      h1 { font-size: 2.2rem; color: #ffffff; margin: 1rem 0 0.5rem 0; }
-      .sub { color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem; }
-      .sub strong { color: #f59e0b; }
-      
+      .badge-diff {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.3rem 0.8rem;
+        border-radius: 6px;
+        border: 1px solid;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      h1 { 
+        font-size: 2.25rem; 
+        color: #ffffff; 
+        margin: 1rem 0 0.4rem 0;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+      }
+
+      .sub { 
+        color: #94a3b8; 
+        font-size: 1.1rem; 
+        margin-bottom: 2rem; 
+      }
+      .sub strong { 
+        color: #f59e0b; 
+      }
+
       .box {
         background: #1e293b;
         border: 1px solid #334155;
-        padding: 1.5rem;
-        border-radius: 8px;
+        padding: 1.5rem 1.75rem;
+        border-radius: 10px;
         margin-bottom: 1.5rem;
       }
-      h2 { color: #38bdf8; font-size: 1.2rem; margin-top: 0; margin-bottom: 0.8rem; }
-      
+
+      h2 { 
+        color: #38bdf8; 
+        font-size: 1.25rem; 
+        margin-top: 0; 
+        margin-bottom: 0.8rem;
+        font-weight: 700;
+      }
+
       ul.ventajas-list {
         list-style-type: none;
         padding-left: 0;
@@ -108,17 +153,70 @@ if (!item) {
         font-weight: bold;
       }
 
-      pre.code-block {
+      /* Contenedor Docker Compose con cabecera y botón de copiar */
+      .docker-box {
         background: #090d16;
         border: 1px solid #233147;
-        border-radius: 6px;
-        padding: 1rem;
-        overflow-x: auto;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+      }
+
+      .docker-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #131d2e;
+        padding: 0.65rem 1.2rem;
+        border-bottom: 1px solid #233147;
+      }
+
+      .docker-filename {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #94a3b8;
         font-size: 0.85rem;
-        color: #7dd3fc;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-weight: 500;
+      }
+
+      .copy-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: #1e293b;
+        color: #f1f5f9;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .copy-btn:hover {
+        background: #334155;
+        border-color: #475569;
+      }
+      .copy-btn.copied {
+        background: #052e16;
+        border-color: #15803d;
+        color: #4ade80;
+      }
+
+      .code-content {
+        padding: 1.25rem;
+        overflow-x: auto;
+      }
+
+      pre.code-block {
         margin: 0;
-        line-height: 1.45;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.875rem;
+        color: #7dd3fc;
+        line-height: 1.55;
+        tab-size: 2;
       }
 
       .btn {
@@ -127,11 +225,13 @@ if (!item) {
         color: white;
         text-decoration: none;
         padding: 0.75rem 1.5rem;
-        border-radius: 6px;
+        border-radius: 8px;
         font-weight: 600;
-        margin-top: 0.5rem;
+        transition: background-color 0.2s;
       }
-      .btn:hover { background: #0369a1; }
+      .btn:hover { 
+        background: #0369a1; 
+      }
     </style>
   </head>
   <body>
@@ -141,11 +241,18 @@ if (!item) {
       <div class="tag-group">
         <span class="badge">{item.categoria}</span>
         {item.dificultad_docker && (
-          <span class="badge-diff">Despliegue Docker: <strong>{item.dificultad_docker}</strong></span>
+          <span 
+            class="badge-diff" 
+            style={`background: ${diffStyle.bg}; color: ${diffStyle.text}; border-color: ${diffStyle.border};`}
+          >
+            Docker: {item.dificultad_docker}
+          </span>
         )}
       </div>
       <h1>{item.nombre}</h1>
-      <p class="sub">Alternativa open-source a <strong>{item.saas_alternativa}</strong> · ⭐ {item.estrellas} estrellas</p>
+      <p class="sub">
+        Alternativa open-source a <strong>{item.saas_alternativa}</strong> · ⭐ {item.estrellas} estrellas
+      </p>
     </div>
 
     <div class="box">
@@ -165,14 +272,59 @@ if (!item) {
     )}
 
     {item.docker_compose && (
-      <div class="box">
-        <h2>Despliegue rápido (Docker Compose)</h2>
-        <pre class="code-block"><code>{item.docker_compose}</code></pre>
+      <div class="docker-box">
+        <div class="docker-header">
+          <div class="docker-filename">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>docker-compose.yml</span>
+          </div>
+          <button class="copy-btn" id="copyBtn" type="button" aria-label="Copiar Docker Compose">
+            <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span class="btn-text">Copiar</span>
+          </button>
+        </div>
+        <div class="code-content">
+          <pre class="code-block"><code id="dockerCode">{item.docker_compose}</code></pre>
+        </div>
       </div>
     )}
 
     <a href={item.url_repo} target="_blank" rel="noopener noreferrer" class="btn">
       Ver código en GitHub &rarr;
     </a>
+
+    <script is:inline>
+      const copyBtn = document.getElementById('copyBtn');
+      const dockerCode = document.getElementById('dockerCode');
+
+      if (copyBtn && dockerCode) {
+        copyBtn.addEventListener('click', async () => {
+          const text = dockerCode.innerText.trim();
+          const btnText = copyBtn.querySelector('.btn-text');
+
+          try {
+            await navigator.clipboard.writeText(text);
+            copyBtn.classList.add('copied');
+            if (btnText) btnText.textContent = '¡Copiado! ✓';
+
+            setTimeout(() => {
+              copyBtn.classList.remove('copied');
+              if (btnText) btnText.textContent = 'Copiar';
+            }, 2000);
+          } catch (err) {
+            console.error('Error al copiar al portapapeles:', err);
+          }
+        });
+      }
+    </script>
   </body>
 </html>

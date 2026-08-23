@@ -1,43 +1,33 @@
-# Astro Starter Kit: Minimal
+# SelfHostDeck 🚀
 
-```sh
-npm create astro@latest -- --template minimal
-```
+> Directorio moderno de herramientas *self-hosted* y alternativas de código abierto a software SaaS comercial, con recetas de Docker Compose listas para desplegar.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+🌐 **Web en producción:** [selfhostdeck.com](https://selfhostdeck.com)
 
-## 🚀 Project Structure
+---
 
-Inside of your Astro project, you'll see the following folders and files:
+## ⚡ Características
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+- **Catálogo Curado:** Alternativas directas a servicios comerciales (Google Photos, Notion, Trello, etc.).
+- **Despliegue Inmediato:** Archivos `docker-compose.yml` listos para usar con volúmenes persistentes y botón de copiado rápido.
+- **Búsqueda en Tiempo Real:** Filtrado instantáneo por nombre, software comercial y categoría temática.
+- **Métricas Actualizadas:** Conteo de estrellas de GitHub y badges de dificultad técnica (*Fácil, Media, Avanzada*).
+- **Rendimiento Máximo:** Frontend estático ultraligero construido sobre la arquitectura de islas de Astro.
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+---
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## 🛠️ Stack Tecnológico
 
-Any static assets, like images, can be placed in the `public/` directory.
+- **Frontend:** [Astro](https://astro.build/) + TypeScript + CSS nativo modular.
+- **Base de Datos:** [Supabase](https://supabase.com/) (PostgreSQL) con Row Level Security (RLS).
+- **Automatización:** Scripts en Python para análisis e ingesta de datos.
+- **Despliegue & DNS:** Cloudflare / Vercel con proxy seguro y protección anti-scrapers.
 
-## 🧞 Commands
+---
 
-All commands are run from the root of the project, from a terminal:
+## 💻 Instalación en Local
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+1. **Clonar el repositorio:**
+   ```bash
+   git clone [https://github.com/DenisCS0/directorio-selfhosted.git](https://github.com/DenisCS0/directorio-selfhosted.git)
+   cd directorio-selfhosted

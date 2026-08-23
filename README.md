@@ -29,5 +29,5 @@
 
 1. **Clonar el repositorio:**
    ```bash
-   git clone [https://github.com/DenisCS0/directorio-selfhosted.git](https://github.com/DenisCS0/directorio-selfhosted.git)
+   git clone https://github.com/DenisCS0/directorio-selfhosted.git
    cd directorio-selfhosted

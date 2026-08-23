@@ -295,32 +295,32 @@ const categorias = ['Todas', ...new Set((herramientas || []).map(h => h.categori
     </div>
 
     <main class="grid" id="contenedor-cards">
-      {herramientas && herramientas.map((item) => (
-        <article 
-          class="card tool-card"
-          data-nombre={(item.nombre_software || '').toLowerCase()}
-          data-sustituye={(item.sustituye_a || '').toLowerCase()}
-          data-categoria={(item.categoria || '').toLowerCase()}
-          data-resumen={(item.resumen || '').toLowerCase()}
-        >
-          <div>
-            <span class="badge">{item.categoria}</span>
-            <h2>{item.nombre_software}</h2>
-            <p class="reemplaza"><strong>Sustituye a:</strong> {item.sustituye_a}</p>
-            <p class="resumen">{item.resumen}</p>
-          </div>
-          <div class="meta">
-            <span class="estrellas">★ {item.estrellas}</span>
-            <a href={`/herramienta/${item.id}`} class="btn">
-              Ver análisis <span>&rarr;</span>
-            </a>
-          </div>
-        </article>
-      ))}
-      <div id="sin-resultados" class="no-results">
-        🔍 No se encontraron herramientas que coincidan con tu búsqueda.
+  {herramientas && herramientas.map((item) => (
+    <article
+      class="card tool-card"
+      data-nombre={(item.nombre || '').toLowerCase()}
+      data-sustituye={(item.saas_alternativa || '').toLowerCase()}
+      data-categoria={(item.categoria || '').toLowerCase()}
+      data-resumen={(item.descripcion || '').toLowerCase()}
+    >
+      <div>
+        <span class="badge">{item.categoria}</span>
+        <h2>{item.nombre}</h2>
+        <p class="reemplaza"><strong>Sustituye a:</strong> {item.saas_alternativa}</p>
+        <p class="resumen">{item.descripcion}</p>
       </div>
-    </main>
+      <div class="meta">
+        <span class="estrellas">★ {item.estrellas}</span>
+        <a href={`/herramienta/${item.id}`} class="btn">
+          Ver análisis <span>&rarr;</span>
+        </a>
+      </div>
+    </article>
+  ))}
+  <div id="sin-resultados" class="no-results">
+    🔍 No se encontraron herramientas que coincidan con tu búsqueda.
+  </div>
+</main>
 
     <script>
       const buscador = document.getElementById('buscador') as HTMLInputElement;

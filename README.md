@@ -31,3 +31,13 @@
    ```bash
    git clone https://github.com/DenisCS0/directorio-selfhosted.git
    cd directorio-selfhosted
+
+---
+
+## 📄 Licencia y Derechos de Autor
+
+© 2026 **SelfHostDeck** — Todos los derechos reservados.
+
+El código fuente de este repositorio es público únicamente con fines educativos, de auditoría técnica y muestra de portfolio:
+* **No está permitido** el uso comercial, redistribución, reventa o despliegue de copias públicas directas (clones) de esta plataforma o sus datos sin autorización previa por escrito del autor.
+* Para colaboraciones, sugerencias o reporte de incidencias, puedes abrir un *Issue* o enviar un mensaje a través del formulario de contacto de la web.

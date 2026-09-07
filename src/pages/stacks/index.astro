@@ -1,0 +1,237 @@
+---
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
+const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const { data: stacks } = await supabase
+  .from('stacks')
+  .select('*')
+  .order('created_at', { ascending: true });
+---
+
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Homelab Stacks Docker | SelfHostDeck</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.15);
+      --accent-amber: #fbbf24;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 1200px;
+      padding: 3rem 1.5rem;
+    }
+
+    /* Cabecera idéntica a la home */
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      transition: opacity 0.2s;
+    }
+    .back-btn:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.025em;
+      margin-bottom: 0.75rem;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 650px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    .counter-bar {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Grid de tarjetas en 3 columnas */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--primary);
+      box-shadow: 0 10px 25px -5px var(--primary-glow);
+    }
+
+    /* Insignia de categoría */
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      background: #0284c7;
+      color: #ffffff;
+      margin-bottom: 0.85rem;
+      width: fit-content;
+    }
+
+    .card-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Línea de componentes con acento ámbar estilo "Sustituye a" */
+    .stack-meta {
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .meta-label {
+      color: var(--accent-amber);
+      font-weight: 600;
+    }
+
+    .meta-val {
+      color: #f1f5f9;
+      font-weight: 500;
+    }
+
+    .card-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Pie de la tarjeta con acción a la derecha */
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--card-border);
+      padding-top: 1rem;
+      font-size: 0.8rem;
+    }
+
+    .reqs-pill {
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    .action-link {
+      color: var(--primary);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .card:hover .action-link {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <header>
+      <a href="/" class="back-btn">← Volver al Directorio Principal</a>
+      <h1>Homelab Stacks</h1>
+      <p class="subtitle">
+        Arquitecturas multicontenedor listas para producción en Docker Compose. Servicios enlazados con volúmenes y redes ya configuradas.
+      </p>
+    </header>
+
+    <div class="counter-bar">
+      Mostrando {stacks ? stacks.length : 0} stacks optimizados
+    </div>
+
+    <div class="grid">
+      {stacks && stacks.map((stack) => (
+        <a href={`/stacks/${stack.slug}`} class="card">
+          <div>
+            <span class="badge">{stack.categoria}</span>
+            <h2 class="card-title">{stack.nombre}</h2>
+            
+            <div class="stack-meta">
+              <span class="meta-label">Incluye:</span>{" "}
+              <span class="meta-val">{stack.herramientas.join(" + ")}</span>
+            </div>
+
+            <p class="card-desc">{stack.descripcion}</p>
+          </div>
+
+          <div class="card-footer">
+            <span class="reqs-pill">{stack.requisitos_minimos.split('(')[0]}</span>
+            <span class="action-link">Ver stack →</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</body>
+</html>

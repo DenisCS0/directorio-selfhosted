@@ -1,0 +1,300 @@
+---
+import { createClient } from '@supabase/supabase-js';
+
+export async function getStaticPaths() {
+  const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
+  const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const { data: stacks } = await supabase.from('stacks').select('slug');
+
+  return (stacks || []).map((s) => ({
+    params: { slug: s.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+
+const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
+const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const { data: stack } = await supabase
+  .from('stacks')
+  .select('*')
+  .eq('slug', slug)
+  .single();
+
+if (!stack) {
+  return Astro.redirect('/404');
+}
+---
+
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{stack.nombre} | Docker Stack SelfHostDeck</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.15);
+      --accent-amber: #fbbf24;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 900px;
+      padding: 3rem 1.5rem;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 2rem;
+      transition: opacity 0.2s;
+    }
+    .back-btn:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+
+    .meta-pills {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .badge-category {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      background: #0284c7;
+      color: #ffffff;
+    }
+
+    .badge-info {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+
+    .desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Caja de herramientas incluidas */
+    .tools-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .tools-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-amber);
+    }
+
+    .tool-chip {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--primary);
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    /* Visor de código estilo terminal */
+    .code-wrapper {
+      background: #090e17;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      margin-bottom: 2rem;
+    }
+
+    .code-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1.25rem;
+      background: #0f172a;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .file-name {
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .copy-button {
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: background 0.2s;
+    }
+    .copy-button:hover {
+      background: #0369a1;
+    }
+
+    pre {
+      padding: 1.5rem;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+
+    /* Pasos rápidos */
+    .deploy-guide {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .guide-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .steps-list {
+      list-style-position: inside;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      line-height: 1.8;
+    }
+
+    .steps-list code {
+      background: #090e17;
+      color: var(--primary);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <a href="/stacks" class="back-btn">← Volver a todos los Stacks</a>
+
+    <header>
+      <div class="meta-pills">
+        <span class="badge-category">{stack.categoria}</span>
+        <span class="badge-info">Dificultad: {stack.dificultad}</span>
+        <span class="badge-info">{stack.requisitos_minimos}</span>
+      </div>
+
+      <h1>{stack.nombre}</h1>
+      <p class="desc">{stack.descripcion}</p>
+    </header>
+
+    <div class="tools-box">
+      <span class="tools-label">Servicios incluidos:</span>
+      {stack.herramientas && stack.herramientas.map((tool: string) => (
+        <span class="tool-chip">{tool}</span>
+      ))}
+    </div>
+
+    <div class="code-wrapper">
+      <div class="code-topbar">
+        <span class="file-name">📄 docker-compose.yml</span>
+        <button id="copyBtn" class="copy-button">
+          📋 Copiar YAML
+        </button>
+      </div>
+      <pre><code id="codeBlock">{stack.docker_compose}</code></pre>
+    </div>
+
+    <div class="deploy-guide">
+      <div class="guide-title">🚀 Cómo poner en marcha este stack</div>
+      <ol class="steps-list">
+        <li>Crea una carpeta en tu servidor o PC para este proyecto: <code>mkdir homelab-stack && cd homelab-stack</code></li>
+        <li>Copia el contenido superior y guárdalo en un archivo llamado <code>docker-compose.yml</code></li>
+        <li>Inicia todos los contenedores en segundo plano: <code>docker compose up -d</code></li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('copyBtn');
+    const code = document.getElementById('codeBlock')?.innerText;
+
+    btn?.addEventListener('click', async () => {
+      if (code) {
+        await navigator.clipboard.writeText(code);
+        btn.textContent = '✓ ¡Copiado!';
+        setTimeout(() => {
+          btn.textContent = '📋 Copiar YAML';
+        }, 2000);
+      }
+    });
+  </script>
+</body>
+</html>

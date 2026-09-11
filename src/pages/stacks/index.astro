@@ -189,10 +189,12 @@ const { data: stacks } = await supabase
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
+      transition: gap 0.15s ease;
     }
 
     .card:hover .action-link {
       text-decoration: underline;
+      gap: 0.5rem;
     }
   </style>
 </head>
@@ -227,7 +229,7 @@ const { data: stacks } = await supabase
 
           <div class="card-footer">
             <span class="reqs-pill">{stack.requisitos_minimos.split('(')[0]}</span>
-            <span class="action-link">Ver stack →</span>
+            <span class="action-link">Ver stack <span>&rarr;</span></span>
           </div>
         </a>
       ))}

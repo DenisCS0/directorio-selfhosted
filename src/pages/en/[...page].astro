@@ -17,15 +17,15 @@ export async function getStaticPaths({ paginate }) {
   }
 
   const items = herramientas || [];
-  const categorias = ['Todas', ...new Set(items.map((h) => h.categoria).filter(Boolean))];
+  const categorias = ['All', ...new Set(items.map((h) => h.categoria_en || h.categoria).filter(Boolean))];
 
-  // Datos ligeros para la búsqueda global en memoria
+  // Datos ligeros para la búsqueda global en memoria (en inglés)
   const catalogoCompleto = items.map((h) => ({
     id: h.id,
     nombre: h.nombre || '',
     saas_alternativa: h.saas_alternativa || '',
-    categoria: h.categoria || '',
-    descripcion: h.descripcion || '',
+    categoria: h.categoria_en || h.categoria || '',
+    descripcion: h.descripcion_en || h.descripcion || '',
     estrellas: h.estrellas || 0,
   }));
 
@@ -44,29 +44,29 @@ const urlEs = currentNum === 1 ? '/' : `/${currentNum}`;
 const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
 ---
 
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SelfHostDeck | Directorio Self-Hosted vs SaaS (Página {page.currentPage})</title>
+  <title>SelfHostDeck | Self-Hosted vs SaaS Directory (Page {page.currentPage})</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
   <!-- Metadatos SEO y Open Graph -->
-  <meta name="description" content="Descubre las mejores alternativas autoalojadas y de código abierto al software SaaS comercial. Controla tus datos y tu homelab." />
-  <link rel="canonical" href={`https://selfhostdeck.com${page.url.current === '/' ? '' : page.url.current}`} />
+  <meta name="description" content="Discover the best self-hosted and open-source alternatives to commercial SaaS. Take full control of your data and homelab." />
+  <link rel="canonical" href={`https://selfhostdeck.com${page.url.current}`} />
 
-  <!-- Tarjetas para Discord, Twitter y Redes -->
+  <!-- Tarjetas para Redes -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://selfhostdeck.com/" />
+  <meta property="og:url" content="https://selfhostdeck.com/en" />
   <meta property="og:site_name" content="SelfHostDeck" />
   <meta property="og:title" content="SelfHostDeck | Find Self-Hosted SaaS Alternatives" />
-  <meta property="og:description" content="Descubre herramientas open-source potentes para reemplazar servicios en la nube." />
+  <meta property="og:description" content="Discover powerful open-source tools to replace commercial cloud software." />
   <meta property="og:image" content="https://selfhostdeck.com/og-image.png" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://selfhostdeck.com/" />
+  <meta name="twitter:url" content="https://selfhostdeck.com/en" />
   <meta name="twitter:title" content="SelfHostDeck | Find Self-Hosted SaaS Alternatives" />
-  <meta name="twitter:description" content="Descubre herramientas open-source potentes para reemplazar servicios en la nube." />
+  <meta name="twitter:description" content="Discover powerful open-source tools to replace commercial cloud software." />
   <meta name="twitter:image" content="https://selfhostdeck.com/og-image.png" />
   
   <style is:global>
@@ -455,13 +455,13 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
     <!-- Selector de Idioma -->
     <div class="top-nav">
       <div class="lang-switch">
-        <a href={urlEs} class="active">ES</a>
+        <a href={urlEs}>ES</a>
         <span class="lang-divider">/</span>
-        <a href={urlEn}>EN</a>
+        <a href={urlEn} class="active">EN</a>
       </div>
     </div>
-    <h1>Directorio Open-Source Self-Hosted</h1>
-    <p class="subtitulo">Alternativas privadas y gratuitas a herramientas de pago, analizadas localmente por IA.</p>
+    <h1>Self-Hosted Open-Source Directory</h1>
+    <p class="subtitulo">Privacy-first and free alternatives to commercial software, analyzed locally with AI.</p>
 
     <div style="margin-top: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: center;">
       <a 
@@ -470,7 +470,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
         onmouseover="this.style.background='#0369a1'; this.style.transform='translateY(-1px)';"
         onmouseout="this.style.background='#0284c7'; this.style.transform='translateY(0)';"
       >
-        ⚡ Explorar Homelab Stacks Docker
+        ⚡ Explore Homelab Docker Stacks
       </a>
     </div>
       
@@ -483,13 +483,13 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
           type="text" 
           id="buscador" 
           class="search-input" 
-          placeholder="Buscar por herramienta, alternativa o tecnología (ej. Photos, Notion, n8n)..." 
+          placeholder="Search by tool, SaaS alternative, or technology (e.g. Photos, Notion, n8n)..." 
         />
       </div>
 
       <div class="filter-pills" id="contenedor-filtros">
         {categorias.map((cat) => (
-          <button class={`pill ${cat === 'Todas' ? 'active' : ''}`} data-cat={cat.toLowerCase()}>
+          <button class={`pill ${cat === 'All' ? 'active' : ''}`} data-cat={cat.toLowerCase()}>
             {cat}
           </button>
         ))}
@@ -498,24 +498,24 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
   </header>
 
   <div class="counter" id="contador-resultados">
-    Mostrando {page.start + 1} - {page.end + 1} de {page.total} herramientas (Página {page.currentPage} de {page.lastPage})
+    Showing {page.start + 1} - {page.end + 1} of {page.total} tools (Page {page.currentPage} of {page.lastPage})
   </div>
 
   <main class="grid" id="contenedor-cards">
     <!-- Contenedor estático paginado -->
     <div id="cards-estaticas" style="display: contents;">
       {page.data.map((item) => (
-        <a href={`/herramienta/${item.id}`} class="card">
+        <a href={`/en/herramienta/${item.id}`} class="card">
           <div>
-            <span class="badge">{item.categoria}</span>
+            <span class="badge">{item.categoria_en || item.categoria}</span>
             <h2>{item.nombre}</h2>
-            <p class="reemplaza"><strong>Sustituye a:</strong> {item.saas_alternativa}</p>
-            <p class="resumen">{item.descripcion}</p>
+            <p class="reemplaza"><strong>Alternative to:</strong> {item.saas_alternativa}</p>
+            <p class="resumen">{item.descripcion_en || item.descripcion}</p>
           </div>
           <div class="meta">
             <span class="estrellas">★ {item.estrellas}</span>
             <span class="btn">
-              Ver análisis <span>&rarr;</span>
+              View analysis <span>&rarr;</span>
             </span>
           </div>
         </a>
@@ -526,20 +526,20 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
     <div id="cards-dinamicas" style="display: contents;"></div>
 
     <div id="sin-resultados" class="no-results">
-      🔍 No se encontraron herramientas que coincidan con tu búsqueda en todo el catálogo.
+      🔍 No tools found matching your search across the catalog.
     </div>
 
     <!-- Paginación Numérica -->
-    <nav class="pagination" id="nav-paginacion" aria-label="Navegación de páginas">
+    <nav class="pagination" id="nav-paginacion" aria-label="Page navigation">
       {page.url.prev ? (
-        <a href={page.url.prev} class="page-link" aria-label="Página anterior">←</a>
+        <a href={page.url.prev} class="page-link" aria-label="Previous page">←</a>
       ) : (
         <span class="page-link disabled" aria-hidden="true">←</span>
       )}
 
       <div class="page-numbers">
         {Array.from({ length: page.lastPage }, (_, i) => i + 1).map((num) => {
-          const url = num === 1 ? '/' : `/${num}`;
+          const url = num === 1 ? '/en' : `/en/${num}`;
           const isActive = num === page.currentPage;
           return isActive ? (
             <span class="page-num active" aria-current="page">{num}</span>
@@ -550,7 +550,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       </div>
 
       {page.url.next ? (
-        <a href={page.url.next} class="page-link" aria-label="Página siguiente">→</a>
+        <a href={page.url.next} class="page-link" aria-label="Next page">→</a>
       ) : (
         <span class="page-link disabled" aria-hidden="true">→</span>
       )}
@@ -558,12 +558,12 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
 
     <footer class="site-footer">
       <div class="footer-links">
-        <a href="/sobre-el-proyecto">Sobre el proyecto</a>
-        <a href="/contacto">Contacto</a>
-        <a href="/privacidad">Privacidad</a>
-        <a href="/aviso-legal">Aviso Legal</a>
+        <a href="/en/about">About</a>
+        <a href="/en/contact">Contact</a>
+        <a href="/en/privacy">Privacy</a>
+        <a href="/en/legal-notice">Legal Notice</a>
       </div>
-      <p>© 2026 SelfHostDeck. Directorio libre de alternativas Open-Source.</p>
+      <p>© 2026 SelfHostDeck. Open-source directory for self-hosted tools.</p>
     </footer>
   </main>
 
@@ -592,7 +592,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
     const cardsDinamicas = document.getElementById('cards-dinamicas');
 
     const textoContadorOriginal = contador?.textContent || '';
-    let currentCategory = 'todas';
+    let currentCategory = 'all';
 
     function escaparHTML(texto: string) {
       const div = document.createElement('div');
@@ -602,17 +602,17 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
 
     function crearTarjetaHTML(item: Tool) {
       return `
-        <a href="/herramienta/${escaparHTML(String(item.id))}" class="card">
+        <a href="/en/herramienta/${escaparHTML(String(item.id))}" class="card">
           <div>
             <span class="badge">${escaparHTML(item.categoria)}</span>
             <h2>${escaparHTML(item.nombre)}</h2>
-            <p class="reemplaza"><strong>Sustituye a:</strong> ${escaparHTML(item.saas_alternativa)}</p>
+            <p class="reemplaza"><strong>Alternative to:</strong> ${escaparHTML(item.saas_alternativa)}</p>
             <p class="resumen">${escaparHTML(item.descripcion)}</p>
           </div>
           <div class="meta">
             <span class="estrellas">★ ${item.estrellas}</span>
             <span class="btn">
-              Ver análisis <span>&rarr;</span>
+              View analysis <span>&rarr;</span>
             </span>
           </div>
         </a>
@@ -621,7 +621,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
 
     function filtrarGlobal() {
       const query = buscador.value.toLowerCase().trim();
-      const estaBuscando = query !== '' || currentCategory !== 'todas';
+      const estaBuscando = query !== '' || currentCategory !== 'all';
 
       if (!estaBuscando) {
         if (cardsEstaticas) cardsEstaticas.style.display = 'contents';
@@ -647,7 +647,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
           item.descripcion.toLowerCase().includes(query);
 
         const matchCat =
-          currentCategory === 'todas' ||
+          currentCategory === 'all' ||
           item.categoria.toLowerCase() === currentCategory;
 
         return matchText && matchCat;
@@ -662,7 +662,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       }
 
       if (contador) {
-        contador.textContent = `Mostrando ${coincidencias.length} herramienta${coincidencias.length === 1 ? '' : 's'} encontrada${coincidencias.length === 1 ? '' : 's'} en el catálogo`;
+        contador.textContent = `Showing ${coincidencias.length} tool${coincidencias.length === 1 ? '' : 's'} found in catalog`;
       }
     }
 
@@ -672,12 +672,12 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       pill.addEventListener('click', () => {
         pills.forEach((p) => p.classList.remove('active'));
         pill.classList.add('active');
-        currentCategory = pill.dataset.cat || 'todas';
+        currentCategory = pill.dataset.cat || 'all';
         filtrarGlobal();
       });
     });
   </script>
-<script is:inline define:vars={{ numPagina: page.currentPage }}>
+  <script is:inline define:vars={{ numPagina: page.currentPage }}>
     sessionStorage.setItem('ultimaPaginaCatalogo', String(numPagina));
   </script>
 </body>

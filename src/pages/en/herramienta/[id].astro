@@ -19,25 +19,40 @@ export async function getStaticPaths() {
 const { item } = Astro.props;
 
 if (!item) {
-  return Astro.redirect('/');
+  return Astro.redirect('/en');
 }
 
-// Función para asignar paleta de colores según la dificultad
-const getDifficultyStyle = (diff: string = '') => {
+// Mapeo y traducción de dificultad para Docker
+const getDifficultyInfo = (diff: string = '') => {
   const d = diff.toLowerCase();
-  if (d.includes('fácil') || d.includes('facil') || d.includes('baja') || d.includes('easy')) {
-    return { bg: '#052e16', text: '#4ade80', border: '#15803d' };
+  if (d.includes('fácil') || d.includes('facil') || d.includes('baja') || d.includes('easy') || d.includes('low')) {
+    return { label: 'Low', bg: '#052e16', text: '#4ade80', border: '#15803d' };
   }
   if (d.includes('media') || d.includes('medium')) {
-    return { bg: '#451a03', text: '#facc15', border: '#b45309' };
+    return { label: 'Medium', bg: '#451a03', text: '#facc15', border: '#b45309' };
   }
-  if (d.includes('alta') || d.includes('avanzada') || d.includes('difícil') || d.includes('dificil') || d.includes('hard')) {
-    return { bg: '#450a0a', text: '#f87171', border: '#b91c1c' };
+  if (d.includes('alta') || d.includes('avanzada') || d.includes('difícil') || d.includes('dificil') || d.includes('hard') || d.includes('high')) {
+    return { label: 'High', bg: '#450a0a', text: '#f87171', border: '#b91c1c' };
   }
-  return { bg: '#1e293b', text: '#38bdf8', border: '#334155' };
+  return { label: diff, bg: '#1e293b', text: '#38bdf8', border: '#334155' };
 };
 
-const diffStyle = getDifficultyStyle(item.dificultad_docker || '');
+const diffInfo = getDifficultyInfo(item.dificultad_docker || '');
+
+// Fallbacks de idiomas
+const categoria = item.categoria_en || item.categoria;
+const descripcion = item.descripcion_en || item.descripcion;
+const ventajas = (item.ventajas_frente_saas_en && item.ventajas_frente_saas_en.length > 0) 
+  ? item.ventajas_frente_saas_en 
+  : item.ventajas_frente_saas;
+
+// Traducción al vuelo del mensaje de compose si no existe archivo oficial
+let dockerCompose = item.docker_compose || '';
+if (dockerCompose.includes('Este proyecto no incluye un archivo docker-compose')) {
+  dockerCompose = `# This project does not include an official docker-compose file in the repository root.
+# Check the official installation instructions at:
+# ${item.url_repo || 'https://github.com'}`;
+}
 
 // URLs del selector de idiomas
 const urlEs = `/herramienta/${item.id}`;
@@ -45,11 +60,11 @@ const urlEn = `/en/herramienta/${item.id}`;
 ---
 
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{item.nombre} - Alternativa a {item.saas_alternativa} | SelfHostDeck</title>
+    <title>{item.nombre} - Alternative to {item.saas_alternativa} | SelfHostDeck</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <style>
       * {
@@ -77,10 +92,10 @@ const urlEn = `/en/herramienta/${item.id}`;
       a.volver {
         color: #38bdf8;
         text-decoration: none;
+        font-weight: 500;
         display: inline-flex;
         align-items: center;
         gap: 0.35rem;
-        font-weight: 500;
         transition: opacity 0.2s;
       }
       a.volver:hover { 
@@ -201,6 +216,7 @@ const urlEn = `/en/herramienta/${item.id}`;
         font-weight: bold;
       }
 
+      /* Contenedor Docker Compose */
       .docker-box {
         background: #090d16;
         border: 1px solid #233147;
@@ -283,49 +299,49 @@ const urlEn = `/en/herramienta/${item.id}`;
   </head>
   <body>
     <div class="top-nav">
-      <a href="/" class="volver" id="btnVolver">&larr; Volver al catálogo</a>
+      <a href="/en" class="volver" id="btnVolver">&larr; Back to catalog</a>
       <div class="lang-switch">
-        <a href={urlEs} class="active">ES</a>
+        <a href={urlEs}>ES</a>
         <span class="lang-divider">/</span>
-        <a href={urlEn}>EN</a>
+        <a href={urlEn} class="active">EN</a>
       </div>
     </div>
 
     <div>
       <div class="tag-group">
-        <span class="badge">{item.categoria}</span>
+        <span class="badge">{categoria}</span>
         {item.dificultad_docker && (
           <span 
             class="badge-diff" 
-            style={`background: ${diffStyle.bg}; color: ${diffStyle.text}; border-color: ${diffStyle.border};`}
+            style={`background: ${diffInfo.bg}; color: ${diffInfo.text}; border-color: ${diffInfo.border};`}
           >
-            Docker: {item.dificultad_docker}
+            Docker: {diffInfo.label}
           </span>
         )}
       </div>
       <h1>{item.nombre}</h1>
       <p class="sub">
-        Alternativa open-source a <strong>{item.saas_alternativa}</strong> · ⭐ {item.estrellas} estrellas
+        Open-source alternative to <strong>{item.saas_alternativa}</strong> · ⭐ {item.estrellas} stars
       </p>
     </div>
 
     <div class="box">
-      <h2>Descripción y propósito</h2>
-      <p>{item.descripcion}</p>
+      <h2>Description & Purpose</h2>
+      <p>{descripcion}</p>
     </div>
 
-    {item.ventajas_frente_saas && item.ventajas_frente_saas.length > 0 && (
+    {ventajas && ventajas.length > 0 && (
       <div class="box">
-        <h2>Ventajas frente al software comercial</h2>
+        <h2>Key Advantages over Commercial Software</h2>
         <ul class="ventajas-list">
-          {item.ventajas_frente_saas.map((v: string) => (
+          {ventajas.map((v: string) => (
             <li>{v}</li>
           ))}
         </ul>
       </div>
     )}
 
-    {item.docker_compose && (
+    {dockerCompose && (
       <div class="docker-box">
         <div class="docker-header">
           <div class="docker-filename">
@@ -338,22 +354,22 @@ const urlEn = `/en/herramienta/${item.id}`;
             </svg>
             <span>docker-compose.yml</span>
           </div>
-          <button class="copy-btn" id="copyBtn" type="button" aria-label="Copiar Docker Compose">
+          <button class="copy-btn" id="copyBtn" type="button" aria-label="Copy Docker Compose">
             <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
-            <span class="btn-text">Copiar</span>
+            <span class="btn-text">Copy</span>
           </button>
         </div>
         <div class="code-content">
-          <pre class="code-block"><code id="dockerCode">{item.docker_compose}</code></pre>
+          <pre class="code-block"><code id="dockerCode">{dockerCompose}</code></pre>
         </div>
       </div>
     )}
 
     <a href={item.url_repo} target="_blank" rel="noopener noreferrer" class="btn">
-      Ver código en GitHub &rarr;
+      View code on GitHub &rarr;
     </a>
 
     <script is:inline>
@@ -368,25 +384,24 @@ const urlEn = `/en/herramienta/${item.id}`;
           try {
             await navigator.clipboard.writeText(text);
             copyBtn.classList.add('copied');
-            if (btnText) btnText.textContent = '¡Copiado! ✓';
+            if (btnText) btnText.textContent = 'Copied! ✓';
 
             setTimeout(() => {
               copyBtn.classList.remove('copied');
-              if (btnText) btnText.textContent = 'Copiar';
+              if (btnText) btnText.textContent = 'Copy';
             }, 2000);
           } catch (err) {
-            console.error('Error al copiar al portapapeles:', err);
+            console.error('Error copying to clipboard:', err);
           }
         });
       }
+    const btnVolver = document.getElementById('btnVolver');
+  const paginaGuardada = sessionStorage.getItem('ultimaPaginaCatalogo');
 
-      // Actualizar enlace de volver con la página de catálogo guardada
-      const btnVolver = document.getElementById('btnVolver');
-      const paginaGuardada = sessionStorage.getItem('ultimaPaginaCatalogo');
-
-      if (btnVolver && paginaGuardada && paginaGuardada !== '1') {
-        btnVolver.href = `/${paginaGuardada}`;
-      }
+  if (btnVolver && paginaGuardada && paginaGuardada !== '1') {
+    btnVolver.href = `/en/${paginaGuardada}`;
+  }
+  
     </script>
   </body>
 </html>

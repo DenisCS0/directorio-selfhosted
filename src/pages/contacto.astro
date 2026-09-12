@@ -1,4 +1,6 @@
 ---
+const urlEs = "/contacto";
+const urlEn = "/en/contact";
 ---
 
 <!DOCTYPE html>
@@ -9,12 +11,7 @@
   <title>Contacto y Sugerencias | SelfHostDeck</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: #0f172a;
@@ -26,117 +23,51 @@
       padding: 2.5rem 1.25rem;
       line-height: 1.6;
     }
-
-    .container {
-      width: 100%;
-      max-width: 680px;
-      margin: 10vh auto auto auto; /* 10vh arriba le da la altura natural perfecta */
-   
+    .container { width: 100%; max-width: 680px; margin: 10vh auto auto auto; }
+    .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .btn-volver {
+      display: inline-flex; align-items: center; gap: 0.4rem; color: #38bdf8;
+      text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: all 0.2s ease;
     }
-
-   .btn-volver {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      color: #38bdf8; /* Azul cian de tu tema */
-      text-decoration: none;
-      font-size: 0.95rem;
-      font-weight: 500;
-      margin-bottom: 1.5rem;
-      transition: all 0.2s ease;
-   }
-
-   .btn-volver:hover {
-      color: #7dd3fc;
-      text-decoration: underline;
-      transform: translateX(-3px); /* Pequeño desplazamiento hacia la izquierda */
-   }
-
-
-    h1 {
-      font-size: 2.25rem;
-      font-weight: 800;
-      color: #ffffff;
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.025em;
+    .btn-volver:hover { color: #7dd3fc; text-decoration: underline; transform: translateX(-3px); }
+    .lang-switch {
+      display: inline-flex; align-items: center; background: #131d31; border: 1px solid #334155;
+      border-radius: 9999px; padding: 0.2rem 0.5rem; gap: 0.35rem; font-size: 0.8rem; font-weight: 700;
     }
-
-    .sub {
-      color: #94a3b8;
-      font-size: 1.05rem;
-      margin-bottom: 2rem;
-    }
-
-    .box {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 10px;
-      padding: 1.5rem 1.75rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .box h2 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #ffffff;
-      margin-bottom: 0.5rem;
-    }
-
-    .box p {
-      color: #94a3b8;
-      font-size: 0.95rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .box p.single {
-      margin-bottom: 0;
-    }
-
-    .box a.mail {
-      color: #38bdf8;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .box a.mail:hover {
-      text-decoration: underline;
-    }
-
+    .lang-switch a { color: #94a3b8; text-decoration: none; padding: 0.25rem 0.6rem; border-radius: 9999px; transition: all 0.2s ease; }
+    .lang-switch a:hover { color: #ffffff; }
+    .lang-switch a.active { background: #0284c7; color: #ffffff; }
+    .lang-divider { color: #334155; font-size: 0.75rem; user-select: none; }
+    h1 { font-size: 2.25rem; font-weight: 800; color: #ffffff; margin-bottom: 0.5rem; letter-spacing: -0.025em; }
+    .sub { color: #94a3b8; font-size: 1.05rem; margin-bottom: 2rem; }
+    .box { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 1.5rem 1.75rem; margin-bottom: 1.25rem; }
+    .box h2 { font-size: 1.25rem; font-weight: 700; color: #ffffff; margin-bottom: 0.5rem; }
+    .box p { color: #94a3b8; font-size: 0.95rem; margin-bottom: 1.25rem; }
+    .box p.single { margin-bottom: 0; }
+    .box a.mail { color: #38bdf8; text-decoration: none; font-weight: 600; }
+    .box a.mail:hover { text-decoration: underline; }
     .btn {
-      display: inline-block;
-      background: #0284c7;
-      color: #ffffff;
-      text-decoration: none;
-      padding: 0.65rem 1.25rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      transition: background-color 0.2s;
+      display: inline-block; background: #0284c7; color: #ffffff; text-decoration: none;
+      padding: 0.65rem 1.25rem; border-radius: 6px; font-size: 0.9rem; font-weight: 600; transition: background-color 0.2s;
     }
-    .btn:hover {
-      background: #0369a1;
-    }
+    .btn:hover { background: #0369a1; }
     .btn-linkedin {
-      display: inline-block;
-      background: #0a66c2;
-      color: #ffffff;
-      text-decoration: none;
-      padding: 0.65rem 1.25rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      transition: background-color 0.2s;
+      display: inline-block; background: #0a66c2; color: #ffffff; text-decoration: none;
+      padding: 0.65rem 1.25rem; border-radius: 6px; font-size: 0.9rem; font-weight: 600; transition: background-color 0.2s;
     }
-    .btn-linkedin:hover {
-      background: #004182;
-    }
+    .btn-linkedin:hover { background: #004182; }
   </style>
 </head>
 <body>
-
   <main class="container">
-  <a href="/" 
-  onclick="if (document.referrer.includes(window.location.host)) { history.back(); return false; }"
-  class="btn-volver"> ← Volver </a>
+    <div class="top-nav">
+      <a href="/" class="btn-volver" id="btnVolver">← Volver al catálogo</a>
+      <div class="lang-switch">
+        <a href={urlEs} class="active">ES</a>
+        <span class="lang-divider">/</span>
+        <a href={urlEn}>EN</a>
+      </div>
+    </div>
 
     <h1>Contacto y Sugerencias</h1>
     <p class="sub">¿Conoces un proyecto open-source que deba estar indexado o tienes propuestas de mejora?</p>
@@ -153,19 +84,22 @@
       <h2>Contacto directo</h2>
       <p class="single">Para consultas generales o dudas técnicas: <a href="mailto:contacto@selfhostdeck.com" class="mail">contacto@selfhostdeck.com</a></p>
     </div>
+
     <div class="box">
       <h2>Perfil profesional</h2>
       <p>Conecta para colaboraciones, networking o proyectos profesionales.</p>
-      <a 
-        href="https://www.linkedin.com/in/denis-campayo-dev" 
-        target="_blank" 
-        rel="noopener noreferrer" 
-        class="btn-linkedin"
-      >
+      <a href="https://www.linkedin.com/in/denis-campayo-dev" target="_blank" rel="noopener noreferrer" class="btn-linkedin">
         Ver perfil en LinkedIn &rarr;
       </a>
     </div>
   </main>
 
+  <script is:inline>
+    const btnVolver = document.getElementById('btnVolver');
+    const paginaGuardada = sessionStorage.getItem('ultimaPaginaCatalogo');
+    if (btnVolver && paginaGuardada && paginaGuardada !== '1') {
+      btnVolver.href = `/${paginaGuardada}`;
+    }
+  </script>
 </body>
 </html>

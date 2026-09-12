@@ -1,28 +1,56 @@
 ---
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
-const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
-const supabase = createClient(supabaseUrl, supabaseKey);
+export async function getStaticPaths({ paginate }) {
+  const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
+  const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
-const { data: herramientas } = await supabase
-  .from('herramientas')
-  .select('*')
-  .order('estrellas', { ascending: false });
+  const { data: herramientas, error } = await supabase
+    .from('herramientas')
+    .select('*')
+    .order('estrellas', { ascending: false });
 
-const categorias = ['Todas', ...new Set((herramientas || []).map(h => h.categoria).filter(Boolean))];
+  if (error) {
+    console.error('Error al consultar Supabase:', error);
+    return [];
+  }
+
+  const items = herramientas || [];
+  const categorias = ['Todas', ...new Set(items.map((h) => h.categoria).filter(Boolean))];
+
+  // Datos ligeros para la búsqueda global en memoria
+  const catalogoCompleto = items.map((h) => ({
+    id: h.id,
+    nombre: h.nombre || '',
+    saas_alternativa: h.saas_alternativa || '',
+    categoria: h.categoria || '',
+    descripcion: h.descripcion || '',
+    estrellas: h.estrellas || 0,
+  }));
+
+  return paginate(items, {
+    pageSize: 12,
+    props: { 
+      categorias,
+      catalogoCompleto
+    },
+  });
+}
+
+const { page, categorias, catalogoCompleto } = Astro.props;
 ---
 
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SelfHostDeck | Directorio Self-Hosted vs SaaS</title>
+  <title>SelfHostDeck | Directorio Self-Hosted vs SaaS (Página {page.currentPage})</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
   <!-- Metadatos SEO y Open Graph -->
   <meta name="description" content="Descubre las mejores alternativas autoalojadas y de código abierto al software SaaS comercial. Controla tus datos y tu homelab." />
-  <link rel="canonical" href="https://selfhostdeck.com/" />
+  <link rel="canonical" href={`https://selfhostdeck.com${page.url.current === '/' ? '' : page.url.current}`} />
 
   <!-- Tarjetas para Discord, Twitter y Redes -->
   <meta property="og:type" content="website" />
@@ -38,7 +66,7 @@ const categorias = ['Todas', ...new Set((herramientas || []).map(h => h.categori
   <meta name="twitter:description" content="Descubre herramientas open-source potentes para reemplazar servicios en la nube." />
   <meta name="twitter:image" content="https://selfhostdeck.com/og-image.png" />
   
-  <style>
+  <style is:global>
     :root {
       --bg: #0b1120;
       --card-bg: #1e293b;
@@ -251,7 +279,6 @@ const categorias = ['Todas', ...new Set((herramientas || []).map(h => h.categori
       transition: gap 0.15s ease;
     }
 
-    /* Al pasar el ratón por cualquier punto de la tarjeta se subraya el botón y se anima la flecha */
     .card:hover .btn {
       text-decoration: underline;
       gap: 0.5rem;
@@ -266,12 +293,89 @@ const categorias = ['Todas', ...new Set((herramientas || []).map(h => h.categori
       padding: 4rem 0;
     }
 
-    /* --- ESTILOS DEL FOOTER --- */
+    /* Paginación Numérica */
+    .pagination {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 3.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .page-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.4rem;
+      height: 2.4rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .page-link:hover:not(.disabled) {
+      border-color: var(--primary);
+      background: #28364d;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .page-link.disabled {
+      opacity: 0.3;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    .page-numbers {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .page-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.4rem;
+      height: 2.4rem;
+      padding: 0 0.5rem;
+      border-radius: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .page-num:hover:not(.active) {
+      border-color: var(--primary);
+      background: #28364d;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .page-num.active {
+      background: #0284c7;
+      border-color: var(--primary);
+      color: #ffffff;
+      pointer-events: none;
+    }
+
+    /* Footer */
     .site-footer {
       grid-column: 1 / -1;
       width: 100%;
       max-width: 1200px;
-      margin: 6rem auto 2rem auto;
+      margin: 4rem auto 2rem auto;
       padding-top: 2.5rem;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
       text-align: center;
@@ -341,36 +445,64 @@ const categorias = ['Todas', ...new Set((herramientas || []).map(h => h.categori
   </header>
 
   <div class="counter" id="contador-resultados">
-    Mostrando {herramientas ? herramientas.length : 0} herramientas
+    Mostrando {page.start + 1} - {page.end + 1} de {page.total} herramientas (Página {page.currentPage} de {page.lastPage})
   </div>
 
   <main class="grid" id="contenedor-cards">
-    {herramientas && herramientas.map((item) => (
-      <a
-        href={`/herramienta/${item.id}`}
-        class="card tool-card"
-        data-nombre={(item.nombre || '').toLowerCase()}
-        data-sustituye={(item.saas_alternativa || '').toLowerCase()}
-        data-categoria={(item.categoria || '').toLowerCase()}
-        data-resumen={(item.descripcion || '').toLowerCase()}
-      >
-        <div>
-          <span class="badge">{item.categoria}</span>
-          <h2>{item.nombre}</h2>
-          <p class="reemplaza"><strong>Sustituye a:</strong> {item.saas_alternativa}</p>
-          <p class="resumen">{item.descripcion}</p>
-        </div>
-        <div class="meta">
-          <span class="estrellas">★ {item.estrellas}</span>
-          <span class="btn">
-            Ver análisis <span>&rarr;</span>
-          </span>
-        </div>
-      </a>
-    ))}
-    <div id="sin-resultados" class="no-results">
-      🔍 No se encontraron herramientas que coincidan con tu búsqueda.
+    <!-- Contenedor estático paginado -->
+    <div id="cards-estaticas" style="display: contents;">
+      {page.data.map((item) => (
+        <a href={`/herramienta/${item.id}`} class="card">
+          <div>
+            <span class="badge">{item.categoria}</span>
+            <h2>{item.nombre}</h2>
+            <p class="reemplaza"><strong>Sustituye a:</strong> {item.saas_alternativa}</p>
+            <p class="resumen">{item.descripcion}</p>
+          </div>
+          <div class="meta">
+            <span class="estrellas">★ {item.estrellas}</span>
+            <span class="btn">
+              Ver análisis <span>&rarr;</span>
+            </span>
+          </div>
+        </a>
+      ))}
     </div>
+
+    <!-- Contenedor dinámico para búsquedas globales -->
+    <div id="cards-dinamicas" style="display: contents;"></div>
+
+    <div id="sin-resultados" class="no-results">
+      🔍 No se encontraron herramientas que coincidan con tu búsqueda en todo el catálogo.
+    </div>
+
+    <!-- Paginación Numérica -->
+    <nav class="pagination" id="nav-paginacion" aria-label="Navegación de páginas">
+      {page.url.prev ? (
+        <a href={page.url.prev} class="page-link" aria-label="Página anterior">←</a>
+      ) : (
+        <span class="page-link disabled" aria-hidden="true">←</span>
+      )}
+
+      <div class="page-numbers">
+        {Array.from({ length: page.lastPage }, (_, i) => i + 1).map((num) => {
+          const url = num === 1 ? '/' : `/${num}`;
+          const isActive = num === page.currentPage;
+          return isActive ? (
+            <span class="page-num active" aria-current="page">{num}</span>
+          ) : (
+            <a href={url} class="page-num">{num}</a>
+          );
+        })}
+      </div>
+
+      {page.url.next ? (
+        <a href={page.url.next} class="page-link" aria-label="Página siguiente">→</a>
+      ) : (
+        <span class="page-link disabled" aria-hidden="true">→</span>
+      )}
+    </nav>
+
     <footer class="site-footer">
       <div class="footer-links">
         <a href="/sobre-el-proyecto">Sobre el proyecto</a>
@@ -382,48 +514,113 @@ const categorias = ['Todas', ...new Set((herramientas || []).map(h => h.categori
     </footer>
   </main>
 
+  <!-- Índice JSON global incrustado -->
+  <script id="catalogo-datos" type="application/json" set:html={JSON.stringify(catalogoCompleto)} />
+
   <script>
-    const buscador = document.getElementById('buscador') as HTMLInputElement;
-    const cards = document.querySelectorAll<HTMLElement>('.tool-card');
-    const noResults = document.getElementById('sin-resultados');
-    const pills = document.querySelectorAll<HTMLButtonElement>('.pill');
-    const contador = document.getElementById('contador-resultados');
-
-    let currentCategory = 'todas';
-
-    function filtrar() {
-      const query = buscador.value.toLowerCase().trim();
-      let visibles = 0;
-
-      cards.forEach((card) => {
-        const matchText = 
-          card.dataset.nombre?.includes(query) ||
-          card.dataset.sustituye?.includes(query) ||
-          card.dataset.categoria?.includes(query) ||
-          card.dataset.resumen?.includes(query);
-
-        const matchCat = currentCategory === 'todas' || card.dataset.categoria === currentCategory;
-
-        if (matchText && matchCat) {
-          card.style.display = 'flex';
-          visibles++;
-        } else {
-          card.style.display = 'none';
-        }
-      });
-
-      if (noResults) noResults.style.display = visibles === 0 ? 'block' : 'none';
-      if (contador) contador.textContent = `Mostrando ${visibles} herramienta${visibles === 1 ? '' : 's'}`;
+    interface Tool {
+      id: string | number;
+      nombre: string;
+      saas_alternativa: string;
+      categoria: string;
+      descripcion: string;
+      estrellas: number;
     }
 
-    buscador?.addEventListener('input', filtrar);
+    const catalogoEl = document.getElementById('catalogo-datos');
+    const todosLosDatos: Tool[] = catalogoEl ? JSON.parse(catalogoEl.textContent || '[]') : [];
+
+    const buscador = document.getElementById('buscador') as HTMLInputElement;
+    const pills = document.querySelectorAll<HTMLButtonElement>('.pill');
+    const contador = document.getElementById('contador-resultados');
+    const sinResultados = document.getElementById('sin-resultados');
+    const navPaginacion = document.getElementById('nav-paginacion');
+    const cardsEstaticas = document.getElementById('cards-estaticas');
+    const cardsDinamicas = document.getElementById('cards-dinamicas');
+
+    const textoContadorOriginal = contador?.textContent || '';
+    let currentCategory = 'todas';
+
+    function escaparHTML(texto: string) {
+      const div = document.createElement('div');
+      div.textContent = texto;
+      return div.innerHTML;
+    }
+
+    function crearTarjetaHTML(item: Tool) {
+      return `
+        <a href="/herramienta/${escaparHTML(String(item.id))}" class="card">
+          <div>
+            <span class="badge">${escaparHTML(item.categoria)}</span>
+            <h2>${escaparHTML(item.nombre)}</h2>
+            <p class="reemplaza"><strong>Sustituye a:</strong> ${escaparHTML(item.saas_alternativa)}</p>
+            <p class="resumen">${escaparHTML(item.descripcion)}</p>
+          </div>
+          <div class="meta">
+            <span class="estrellas">★ ${item.estrellas}</span>
+            <span class="btn">
+              Ver análisis <span>&rarr;</span>
+            </span>
+          </div>
+        </a>
+      `;
+    }
+
+    function filtrarGlobal() {
+      const query = buscador.value.toLowerCase().trim();
+      const estaBuscando = query !== '' || currentCategory !== 'todas';
+
+      if (!estaBuscando) {
+        if (cardsEstaticas) cardsEstaticas.style.display = 'contents';
+        if (cardsDinamicas) {
+          cardsDinamicas.style.display = 'none';
+          cardsDinamicas.innerHTML = '';
+        }
+        if (navPaginacion) navPaginacion.style.display = 'flex';
+        if (sinResultados) sinResultados.style.display = 'none';
+        if (contador) contador.textContent = textoContadorOriginal;
+        return;
+      }
+
+      if (cardsEstaticas) cardsEstaticas.style.display = 'none';
+      if (cardsDinamicas) cardsDinamicas.style.display = 'contents';
+      if (navPaginacion) navPaginacion.style.display = 'none';
+
+      const coincidencias = todosLosDatos.filter((item) => {
+        const matchText =
+          item.nombre.toLowerCase().includes(query) ||
+          item.saas_alternativa.toLowerCase().includes(query) ||
+          item.categoria.toLowerCase().includes(query) ||
+          item.descripcion.toLowerCase().includes(query);
+
+        const matchCat =
+          currentCategory === 'todas' ||
+          item.categoria.toLowerCase() === currentCategory;
+
+        return matchText && matchCat;
+      });
+
+      if (cardsDinamicas) {
+        cardsDinamicas.innerHTML = coincidencias.map(crearTarjetaHTML).join('');
+      }
+
+      if (sinResultados) {
+        sinResultados.style.display = coincidencias.length === 0 ? 'block' : 'none';
+      }
+
+      if (contador) {
+        contador.textContent = `Mostrando ${coincidencias.length} herramienta${coincidencias.length === 1 ? '' : 's'} encontrada${coincidencias.length === 1 ? '' : 's'} en el catálogo`;
+      }
+    }
+
+    buscador?.addEventListener('input', filtrarGlobal);
 
     pills.forEach((pill) => {
       pill.addEventListener('click', () => {
-        pills.forEach(p => p.classList.remove('active'));
+        pills.forEach((p) => p.classList.remove('active'));
         pill.classList.add('active');
         currentCategory = pill.dataset.cat || 'todas';
-        filtrar();
+        filtrarGlobal();
       });
     });
   </script>

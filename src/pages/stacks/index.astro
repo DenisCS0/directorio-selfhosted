@@ -1,5 +1,6 @@
 ---
 import { createClient } from '@supabase/supabase-js';
+import Footer from '../../components/Footer.astro';
 
 const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
 const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
@@ -235,5 +236,6 @@ const { data: stacks } = await supabase
       ))}
     </div>
   </div>
+<Footer />
 </body>
 </html>

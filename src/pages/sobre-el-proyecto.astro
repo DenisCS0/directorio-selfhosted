@@ -99,21 +99,23 @@
       border-radius: 6px;
     }
 
-    .btn {
-      display: inline-block;
-      background: #0284c7;
-      color: #ffffff;
+    .btn-volver {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #38bdf8; /* Azul cian de tu tema */
       text-decoration: none;
-      padding: 0.65rem 1.25rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-top: 0.5rem;
-      transition: background-color 0.2s;
-    }
-    .btn:hover {
-      background: #0369a1;
-    }
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      transition: all 0.2s ease;
+   }
+
+   .btn-volver:hover {
+      color: #7dd3fc;
+      text-decoration: underline;
+      transform: translateX(-3px); /* Pequeño desplazamiento hacia la izquierda */
+   }
 
     .btn-linkedin {
       background: #0a66c2;
@@ -126,7 +128,9 @@
 <body>
 
   <main class="container">
-    <a href="/" class="volver">&larr; Volver al catálogo</a>
+    <a href="/" 
+  onclick="if (document.referrer.includes(window.location.host)) { history.back(); return false; }"
+  class="btn-volver"> ← Volver </a>
 
     <h1>Sobre el Proyecto</h1>
     <p class="sub">Misión, arquitectura técnica y soberanía digital detrás del catálogo.</p>

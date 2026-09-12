@@ -1,0 +1,43 @@
+---
+// src/components/Footer.astro
+---
+<footer class="site-footer">
+  <div class="footer-links">
+    <a href="/sobre-el-proyecto">Sobre el proyecto</a>
+    <a href="/contacto">Contacto</a>
+    <a href="/privacidad">Privacidad</a>
+    <a href="/aviso-legal">Aviso Legal</a>
+  </div>
+  <p>© 2026 SelfHostDeck. Directorio libre de alternativas Open-Source.</p>
+</footer>
+
+<style>
+  .site-footer {
+    width: 100%;
+    max-width: 1200px;
+    margin: 4rem auto 2rem auto;
+    padding-top: 2.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: center;
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .footer-links a {
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+  }
+  .footer-links a:hover {
+    color: #38bdf8;
+  }
+</style>

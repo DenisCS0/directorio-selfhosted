@@ -34,18 +34,24 @@
    
     }
 
-    .volver {
-      display: inline-block;
-      color: #38bdf8 !important;
+   .btn-volver {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #38bdf8; /* Azul cian de tu tema */
       text-decoration: none;
+      font-size: 0.95rem;
       font-weight: 500;
-      margin-bottom: 2rem;
-      transition: opacity 0.2s;
-    }
-    .volver:hover {
-      opacity: 0.8;
+      margin-bottom: 1.5rem;
+      transition: all 0.2s ease;
+   }
+
+   .btn-volver:hover {
+      color: #7dd3fc;
       text-decoration: underline;
-    }
+      transform: translateX(-3px); /* Pequeño desplazamiento hacia la izquierda */
+   }
+
 
     h1 {
       font-size: 2.25rem;
@@ -128,7 +134,9 @@
 <body>
 
   <main class="container">
-    <a href="/" class="volver">&larr; Volver al catálogo</a>
+  <a href="/" 
+  onclick="if (document.referrer.includes(window.location.host)) { history.back(); return false; }"
+  class="btn-volver"> ← Volver </a>
 
     <h1>Contacto y Sugerencias</h1>
     <p class="sub">¿Conoces un proyecto open-source que deba estar indexado o tienes propuestas de mejora?</p>

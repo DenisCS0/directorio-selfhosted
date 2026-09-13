@@ -28,13 +28,39 @@ const { data: stack } = await supabase
 if (!stack) {
   return Astro.redirect('/404');
 }
+
+const CATEGORIAS_EN: Record<string, string> = {
+  "Almacenamiento y Nube": "Cloud & Storage",
+  "Multimedia y Streaming": "Media & Streaming",
+  "Seguridad y Privacidad": "Security & Privacy",
+  "Automatización y DevOps": "Automation & DevOps",
+  "Monitorización y Métricas": "Monitoring & Metrics",
+  "Analítica y Datos": "Analytics & Data",
+  "Productividad y Notas": "Productivity & Notes",
+  "Domótica e IoT": "Smart Home & IoT",
+  "Redes e Infraestructura": "Networking & Infrastructure",
+  "Inteligencia Artificial": "Artificial Intelligence"
+};
+
+const DIFICULTAD_EN: Record<string, string> = {
+  "Baja": "Low",
+  "Media": "Medium",
+  "Alta": "High"
+};
+
+const categoriaFinal = stack.categoria_en || CATEGORIAS_EN[stack.categoria] || stack.categoria;
+const dificultadFinal = stack.dificultad_en || DIFICULTAD_EN[stack.dificultad] || stack.dificultad;
+const nombreFinal = stack.nombre_en || stack.nombre;
+const descFinal = stack.descripcion_en || stack.descripcion;
+const reqsFinal = stack.requisitos_minimos_en || stack.requisitos_minimos;
 ---
 
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{stack.nombre} | Docker Stack SelfHostDeck</title>
+  <title>{nombreFinal} | Homelab Docker Stack SelfHostDeck</title>
+  <meta name="description" content={descFinal} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <style>
     :root {
@@ -83,7 +109,6 @@ if (!stack) {
       font-weight: 500;
       transition: opacity 0.2s;
     }
-
     .back-btn:hover {
       opacity: 0.8;
       text-decoration: underline;
@@ -272,26 +297,26 @@ if (!stack) {
 <body>
   <div class="main-container">
     <div class="top-bar">
-      <a href="/stacks" class="back-btn">← Volver a todos los Stacks</a>
+      <a href="/en/stacks" class="back-btn">← Back to all Stacks</a>
       <div class="lang-switcher">
-        <span class="lang-btn active">ES</span>
-        <a href={`/en/stacks/${stack.slug}`} class="lang-btn">EN</a>
+        <a href={`/stacks/${stack.slug}`} class="lang-btn">ES</a>
+        <span class="lang-btn active">EN</span>
       </div>
     </div>
 
     <header>
       <div class="meta-pills">
-        <span class="badge-category">{stack.categoria}</span>
-        <span class="badge-info">Dificultad: {stack.dificultad}</span>
-        <span class="badge-info">{stack.requisitos_minimos}</span>
+        <span class="badge-category">{categoriaFinal}</span>
+        <span class="badge-info">Difficulty: {dificultadFinal}</span>
+        <span class="badge-info">{reqsFinal}</span>
       </div>
 
-      <h1>{stack.nombre}</h1>
-      <p class="desc">{stack.descripcion}</p>
+      <h1>{nombreFinal}</h1>
+      <p class="desc">{descFinal}</p>
     </header>
 
     <div class="tools-box">
-      <span class="tools-label">Servicios incluidos:</span>
+      <span class="tools-label">Included services:</span>
       {stack.herramientas && stack.herramientas.map((tool: string) => (
         <span class="tool-chip">{tool}</span>
       ))}
@@ -301,18 +326,18 @@ if (!stack) {
       <div class="code-topbar">
         <span class="file-name">📄 docker-compose.yml</span>
         <button id="copyBtn" class="copy-button">
-          📋 Copiar YAML
+          📋 Copy YAML
         </button>
       </div>
       <pre><code id="codeBlock">{stack.docker_compose}</code></pre>
     </div>
 
     <div class="deploy-guide">
-      <div class="guide-title">🚀 Cómo poner en marcha este stack</div>
+      <div class="guide-title">🚀 How to deploy this stack</div>
       <ol class="steps-list">
-        <li>Crea una carpeta en tu servidor o PC para este proyecto: <code>mkdir homelab-stack && cd homelab-stack</code></li>
-        <li>Copia el contenido superior y guárdalo en un archivo llamado <code>docker-compose.yml</code></li>
-        <li>Inicia todos los contenedores en segundo plano: <code>docker compose up -d</code></li>
+        <li>Create a dedicated folder on your server: <code>mkdir homelab-stack && cd homelab-stack</code></li>
+        <li>Paste the configuration above into a file named <code>docker-compose.yml</code></li>
+        <li>Launch all services in background: <code>docker compose up -d</code></li>
       </ol>
     </div>
   </div>
@@ -324,9 +349,9 @@ if (!stack) {
     btn?.addEventListener('click', async () => {
       if (code) {
         await navigator.clipboard.writeText(code);
-        btn.textContent = '✓ ¡Copiado!';
+        btn.textContent = '✓ Copied!';
         setTimeout(() => {
-          btn.textContent = '📋 Copiar YAML';
+          btn.textContent = '📋 Copy YAML';
         }, 2000);
       }
     });

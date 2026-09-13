@@ -1,6 +1,6 @@
 ---
 import { createClient } from '@supabase/supabase-js';
-import Footer from '../../components/Footer.astro';
+import Footer from '../../../components/Footer.astro';
 
 const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
 const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
@@ -10,13 +10,28 @@ const { data: stacks } = await supabase
   .from('stacks')
   .select('*')
   .order('created_at', { ascending: true });
+
+// Mapeo de categorías al inglés por si la tabla aún no tiene categoria_en
+const CATEGORIAS_EN: Record<string, string> = {
+  "Almacenamiento y Nube": "Cloud & Storage",
+  "Multimedia y Streaming": "Media & Streaming",
+  "Seguridad y Privacidad": "Security & Privacy",
+  "Automatización y DevOps": "Automation & DevOps",
+  "Monitorización y Métricas": "Monitoring & Metrics",
+  "Analítica y Datos": "Analytics & Data",
+  "Productividad y Notas": "Productivity & Notes",
+  "Domótica e IoT": "Smart Home & IoT",
+  "Redes e Infraestructura": "Networking & Infrastructure",
+  "Inteligencia Artificial": "Artificial Intelligence"
+};
 ---
 
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Homelab Stacks Docker | SelfHostDeck</title>
+  <title>Production-Ready Homelab Docker Stacks | SelfHostDeck</title>
+  <meta name="description" content="Pre-configured, production-ready multi-container Docker Compose stacks for homelabs. Linked networks, persistent storage, and optimized services." />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <style>
     :root {
@@ -48,7 +63,7 @@ const { data: stacks } = await supabase
       padding: 2.5rem 1.5rem;
     }
 
-    /* Barra superior flex: alinea el enlace a la izquierda y el switcher a la derecha */
+    /* Barra superior con navegación y selector de idioma */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -66,7 +81,6 @@ const { data: stacks } = await supabase
       font-weight: 500;
       transition: opacity 0.2s;
     }
-
     .back-btn:hover {
       opacity: 0.8;
       text-decoration: underline;
@@ -230,45 +244,52 @@ const { data: stacks } = await supabase
 <body>
   <div class="main-container">
     <div class="top-bar">
-      <a href="/" class="back-btn">← Volver al Directorio Principal</a>
+      <a href="/en" class="back-btn">← Back to Catalog</a>
       <div class="lang-switcher">
-        <span class="lang-btn active">ES</span>
-        <a href="/en/stacks" class="lang-btn">EN</a>
+        <a href="/stacks" class="lang-btn">ES</a>
+        <span class="lang-btn active">EN</span>
       </div>
     </div>
 
     <header>
       <h1>Homelab Stacks</h1>
       <p class="subtitle">
-        Arquitecturas multicontenedor listas para producción en Docker Compose. Servicios enlazados con volúmenes y redes ya configuradas.
+        Production-ready multi-container architectures in Docker Compose. Pre-configured networks, linked services, and persistent volumes.
       </p>
     </header>
 
     <div class="counter-bar">
-      Mostrando {stacks ? stacks.length : 0} stacks optimizados
+      Showing {stacks ? stacks.length : 0} optimized stacks
     </div>
 
     <div class="grid">
-      {stacks && stacks.map((stack) => (
-        <a href={`/stacks/${stack.slug}`} class="card">
-          <div>
-            <span class="badge">{stack.categoria}</span>
-            <h2 class="card-title">{stack.nombre}</h2>
-            
-            <div class="stack-meta">
-              <span class="meta-label">Incluye:</span>{" "}
-              <span class="meta-val">{Array.isArray(stack.herramientas) ? stack.herramientas.join(" + ") : stack.herramientas}</span>
+      {stacks && stacks.map((stack) => {
+        const categoriaFinal = stack.categoria_en || CATEGORIAS_EN[stack.categoria] || stack.categoria;
+        const nombreFinal = stack.nombre_en || stack.nombre;
+        const descFinal = stack.descripcion_en || stack.descripcion;
+        const reqsFinal = stack.requisitos_minimos ? stack.requisitos_minimos.split('(')[0] : '2 vCPU / 4GB RAM';
+
+        return (
+          <a href={`/en/stacks/${stack.slug}`} class="card">
+            <div>
+              <span class="badge">{categoriaFinal}</span>
+              <h2 class="card-title">{nombreFinal}</h2>
+              
+              <div class="stack-meta">
+                <span class="meta-label">Includes:</span>{" "}
+                <span class="meta-val">{Array.isArray(stack.herramientas) ? stack.herramientas.join(" + ") : stack.herramientas}</span>
+              </div>
+
+              <p class="card-desc">{descFinal}</p>
             </div>
 
-            <p class="card-desc">{stack.descripcion}</p>
-          </div>
-
-          <div class="card-footer">
-            <span class="reqs-pill">{stack.requisitos_minimos ? stack.requisitos_minimos.split('(')[0] : '2 vCPU / 4GB RAM'}</span>
-            <span class="action-link">Ver stack <span>&rarr;</span></span>
-          </div>
-        </a>
-      ))}
+            <div class="card-footer">
+              <span class="reqs-pill">{reqsFinal}</span>
+              <span class="action-link">View stack <span>&rarr;</span></span>
+            </div>
+          </a>
+        );
+      })}
     </div>
   </div>
   <Footer />

@@ -1,14 +1,36 @@
 ---
 // src/components/Footer.astro
+interface Props {
+  lang?: 'es' | 'en';
+}
+
+const { lang } = Astro.props;
+const isEn = lang === 'en' || Astro.url.pathname.startsWith('/en');
+
+const links = isEn ? [
+  { href: '/en/about', label: 'About' },
+  { href: '/en/contact', label: 'Contact' },
+  { href: '/en/privacy', label: 'Privacy Policy' },
+  { href: '/en/legal-notice', label: 'Legal Notice' }
+] : [
+  { href: '/sobre-el-proyecto', label: 'Sobre el proyecto' },
+  { href: '/contacto', label: 'Contacto' },
+  { href: '/privacidad', label: 'Privacidad' },
+  { href: '/aviso-legal', label: 'Aviso Legal' }
+];
+
+const copyright = isEn 
+  ? '© 2026 SelfHostDeck. Curated open-source directory.'
+  : '© 2026 SelfHostDeck. Directorio libre de alternativas Open-Source.';
 ---
+
 <footer class="site-footer">
   <div class="footer-links">
-    <a href="/sobre-el-proyecto">Sobre el proyecto</a>
-    <a href="/contacto">Contacto</a>
-    <a href="/privacidad">Privacidad</a>
-    <a href="/aviso-legal">Aviso Legal</a>
+    {links.map((link) => (
+      <a href={link.href}>{link.label}</a>
+    ))}
   </div>
-  <p>© 2026 SelfHostDeck. Directorio libre de alternativas Open-Source.</p>
+  <p>{copyright}</p>
 </footer>
 
 <style>

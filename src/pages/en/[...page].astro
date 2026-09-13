@@ -1,5 +1,16 @@
 ---
 import { createClient } from '@supabase/supabase-js';
+import Footer from '../../components/Footer.astro';
+
+// Función para transformar nombres a slugs limpios (ej: "Google Photos" -> "google-photos")
+function toSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
 
 export async function getStaticPaths({ paginate }) {
   const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
@@ -88,6 +99,9 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       max-width: 1200px;
       margin: 0 auto;
       padding: 3rem 1.5rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     /* Cabecera */
@@ -206,6 +220,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
     }
 
     .card {
+      position: relative;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
@@ -213,9 +228,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      text-decoration: none;
       color: inherit;
-      cursor: pointer;
       transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
@@ -223,6 +236,19 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       transform: translateY(-3px);
       border-color: var(--primary);
       box-shadow: 0 10px 25px -5px var(--primary-glow);
+    }
+
+    /* Stretched link */
+    .main-link {
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    .main-link::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 1;
     }
 
     .badge {
@@ -235,21 +261,35 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       border-radius: 6px;
       margin-bottom: 0.75rem;
       width: fit-content;
+      position: relative;
+      z-index: 2;
     }
 
     h2 {
       margin: 0 0 0.5rem 0;
       font-size: 1.35rem;
       font-weight: 700;
-      color: #ffffff;
     }
 
     .reemplaza {
       color: #cbd5e1;
       font-size: 0.95rem;
       margin-bottom: 0.75rem;
+      position: relative;
+      z-index: 2;
     }
     .reemplaza strong { color: #f59e0b; }
+
+    /* Estilo del enlace a la alternativa */
+    .sub-link {
+      color: #cbd5e1;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color 0.15s ease;
+    }
+    .sub-link:hover {
+      color: var(--primary);
+    }
 
     .resumen {
       color: var(--text-muted);
@@ -414,40 +454,6 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       font-size: 0.75rem;
       user-select: none;
     }
-
-    /* Footer */
-    .site-footer {
-      grid-column: 1 / -1;
-      width: 100%;
-      max-width: 1200px;
-      margin: 4rem auto 2rem auto;
-      padding-top: 2.5rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      text-align: center;
-      color: #64748b;
-      font-size: 0.875rem;
-    }
-
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 2rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.25rem;
-    }
-
-    .footer-links a {
-      color: #94a3b8;
-      text-decoration: none;
-      font-weight: 500;
-      white-space: nowrap;
-      transition: color 0.2s ease;
-    }
-
-    .footer-links a:hover {
-      color: #38bdf8;
-    }
   </style>
 </head>
 <body>
@@ -505,11 +511,27 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
     <!-- Contenedor estático paginado -->
     <div id="cards-estaticas" style="display: contents;">
       {page.data.map((item) => (
-        <a href={`/en/herramienta/${item.id}`} class="card">
+        <article class="card">
           <div>
             <span class="badge">{item.categoria_en || item.categoria}</span>
-            <h2>{item.nombre}</h2>
-            <p class="reemplaza"><strong>Alternative to:</strong> {item.saas_alternativa}</p>
+            <h2>
+              <a href={`/en/herramienta/${item.id}`} class="main-link">
+                {item.nombre}
+              </a>
+            </h2>
+            <p class="reemplaza">
+              <strong>Alternative to:</strong>{" "}
+              {item.saas_alternativa ? item.saas_alternativa.split('/').map((s: string, idx: number, arr: string[]) => {
+                const name = s.trim();
+                const slug = toSlug(name);
+                return (
+                  <>
+                    <a href={`/en/alternatives/${slug}`} class="sub-link">{name}</a>
+                    {idx < arr.length - 1 ? ' / ' : ''}
+                  </>
+                );
+              }) : 'N/A'}
+            </p>
             <p class="resumen">{item.descripcion_en || item.descripcion}</p>
           </div>
           <div class="meta">
@@ -518,7 +540,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
               View analysis <span>&rarr;</span>
             </span>
           </div>
-        </a>
+        </article>
       ))}
     </div>
 
@@ -555,17 +577,9 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
         <span class="page-link disabled" aria-hidden="true">→</span>
       )}
     </nav>
-
-    <footer class="site-footer">
-      <div class="footer-links">
-        <a href="/en/about">About</a>
-        <a href="/en/contact">Contact</a>
-        <a href="/en/privacy">Privacy</a>
-        <a href="/en/legal-notice">Legal Notice</a>
-      </div>
-      <p>© 2026 SelfHostDeck. Open-source directory for self-hosted tools.</p>
-    </footer>
   </main>
+
+  <Footer />
 
   <!-- Índice JSON global incrustado -->
   <script id="catalogo-datos" type="application/json" set:html={JSON.stringify(catalogoCompleto)} />
@@ -578,6 +592,15 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       categoria: string;
       descripcion: string;
       estrellas: number;
+    }
+
+    function toSlug(text: string): string {
+      return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
     }
 
     const catalogoEl = document.getElementById('catalogo-datos');
@@ -601,12 +624,25 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
     }
 
     function crearTarjetaHTML(item: Tool) {
+      const linksSaaS = item.saas_alternativa
+        ? item.saas_alternativa.split('/').map((s, idx, arr) => {
+            const nombre = s.trim();
+            const slug = toSlug(nombre);
+            const sep = idx < arr.length - 1 ? ' / ' : '';
+            return `<a href="/en/alternatives/${slug}" class="sub-link">${escaparHTML(nombre)}</a>${sep}`;
+          }).join('')
+        : 'N/A';
+
       return `
-        <a href="/en/herramienta/${escaparHTML(String(item.id))}" class="card">
+        <article class="card">
           <div>
             <span class="badge">${escaparHTML(item.categoria)}</span>
-            <h2>${escaparHTML(item.nombre)}</h2>
-            <p class="reemplaza"><strong>Alternative to:</strong> ${escaparHTML(item.saas_alternativa)}</p>
+            <h2>
+              <a href="/en/herramienta/${escaparHTML(String(item.id))}" class="main-link">
+                ${escaparHTML(item.nombre)}
+              </a>
+            </h2>
+            <p class="reemplaza"><strong>Alternative to:</strong> ${linksSaaS}</p>
             <p class="resumen">${escaparHTML(item.descripcion)}</p>
           </div>
           <div class="meta">
@@ -615,7 +651,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
               View analysis <span>&rarr;</span>
             </span>
           </div>
-        </a>
+        </article>
       `;
     }
 
@@ -677,6 +713,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       });
     });
   </script>
+
   <script is:inline define:vars={{ numPagina: page.currentPage }}>
     sessionStorage.setItem('ultimaPaginaCatalogo', String(numPagina));
   </script>

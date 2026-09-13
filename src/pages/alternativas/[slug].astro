@@ -1,0 +1,250 @@
+---
+import { createClient } from '@supabase/supabase-js';
+import Footer from '../../components/Footer.astro';
+
+export async function getStaticPaths() {
+  const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
+  const supabaseKey = 'sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs';
+  const client = createClient(supabaseUrl, supabaseKey);
+
+  const { data: herramientas, error } = await client
+    .from('herramientas')
+    .select('*');
+
+  if (error || !herramientas) {
+    console.error('Error cargando alternativas:', error);
+    return [];
+  }
+
+  // Mapear cada SaaS comercial con las herramientas que lo sustituyen
+  const mapaAlternativas: Record<string, { nombreOriginal: string; items: any[] }> = {};
+
+  herramientas.forEach((item) => {
+    if (!item.saas_alternativa) return;
+
+    // Soporta múltiples servicios separados por barra (ej. "Retool / Airtable")
+    const servicios = item.saas_alternativa.split('/').map((s: string) => s.trim());
+
+    servicios.forEach((servicio: string) => {
+      if (!servicio) return;
+      const slug = servicio
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+      if (!mapaAlternativas[slug]) {
+        mapaAlternativas[slug] = {
+          nombreOriginal: servicio,
+          items: []
+        };
+      }
+      mapaAlternativas[slug].items.push(item);
+    });
+  });
+
+  return Object.entries(mapaAlternativas).map(([slug, data]) => ({
+    params: { slug },
+    props: {
+      servicio: data.nombreOriginal,
+      // Ordenadas de mayor a menor número de estrellas de GitHub
+      herramientas: data.items.sort((a, b) => (b.estrellas || 0) - (a.estrellas || 0))
+    }
+  }));
+}
+
+const { servicio, herramientas } = Astro.props;
+---
+
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mejores alternativas autoalojadas a {servicio} (Open Source) | SelfHostDeck</title>
+  <meta name="description" content={`Descubre las mejores alternativas libres, privadas y autoalojadas para reemplazar ${servicio}. Recupera el control de tus datos.`} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.15);
+      --accent-amber: #fbbf24;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 1200px;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .back-btn {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    .back-btn:hover { text-decoration: underline; }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.75rem;
+      line-height: 1.2;
+    }
+
+    h1 span {
+      color: var(--primary);
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .counter-bar {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--primary);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      background: #0284c7;
+      color: #ffffff;
+      margin-bottom: 0.85rem;
+      width: fit-content;
+    }
+
+    .card-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--card-border);
+      padding-top: 1rem;
+      font-size: 0.85rem;
+    }
+
+    .stars {
+      color: var(--accent-amber);
+      font-weight: 600;
+    }
+
+    .action-link {
+      color: var(--primary);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="top-bar">
+      <a href="/" class="back-btn">← Volver al Catálogo</a>
+    </div>
+
+    <header>
+      <h1>Alternativas Open Source a <span>{servicio}</span></h1>
+      <p class="subtitle">
+        Herramientas libres y autoalojadas para reemplazar {servicio}. Conserva el control total de tus datos y ahorra en costes mensuales de suscripción.
+      </p>
+    </header>
+
+    <div class="counter-bar">
+      {herramientas.length} {herramientas.length === 1 ? 'alternativa encontrada' : 'alternativas encontradas'}
+    </div>
+
+    <div class="grid">
+      {herramientas.map((tool) => (
+        <a href={`/herramienta/${tool.id}`} class="card">
+          <div>
+            <span class="badge">{tool.categoria}</span>
+            <h2 class="card-title">{tool.nombre}</h2>
+            <p class="card-desc">{tool.descripcion}</p>
+          </div>
+
+          <div class="card-footer">
+            <span class="stars">★ {tool.estrellas}</span>
+            <span class="action-link">Ver análisis →</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+  <Footer lang="es" />
+</body>
+</html>

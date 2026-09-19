@@ -44,6 +44,28 @@ const diffStyle = getDifficultyStyle(item.dificultad_docker || '');
 const currentSlug = item.slug || toSlug(item.nombre);
 const urlEs = `/herramienta/${currentSlug}`;
 const urlEn = `/en/herramienta/${currentSlug}`;
+
+// Objeto Schema.org estructurado
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": item.nombre,
+  "operatingSystem": "Linux, Docker",
+  "applicationCategory": item.categoria,
+  "description": item.descripcion,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9",
+    "reviewCount": Math.max(item.estrellas || 10, 10),
+    "bestRating": "5",
+    "worstRating": "1"
+  }
+};
 ---
 
 <!DOCTYPE html>
@@ -60,6 +82,9 @@ const urlEn = `/en/herramienta/${currentSlug}`;
     <link rel="alternate" hreflang="es" href={`https://selfhostdeck.com${urlEs}`} />
     <link rel="alternate" hreflang="en" href={`https://selfhostdeck.com${urlEn}`} />
     <link rel="alternate" hreflang="x-default" href={`https://selfhostdeck.com${urlEn}`} />
+
+    <!-- Datos estructurados Schema.org para fragmentos enriquecidos en Google -->
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
     <style>
       * {

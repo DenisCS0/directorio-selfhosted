@@ -11,13 +11,33 @@ export async function getStaticPaths() {
     .from('herramientas')
     .select('*');
 
-  return (herramientas || []).map((item) => ({
-    params: { slug: item.slug || toSlug(item.nombre) },
-    props: { item },
-  }));
+  const allTools = herramientas || [];
+
+  return allTools.map((item) => {
+    // 1. Filtrar herramientas de la misma categoría excluyendo la actual
+    const sameCategory = allTools
+      .filter((h) => (h.id ? h.id !== item.id : h.nombre !== item.nombre) && h.categoria === item.categoria)
+      .sort((a, b) => (b.estrellas || 0) - (a.estrellas || 0));
+
+    let related = sameCategory.slice(0, 3);
+
+    // 2. Rellenar con más populares si faltan
+    if (related.length < 3) {
+      const remaining = allTools
+        .filter((h) => (h.id ? h.id !== item.id : h.nombre !== item.nombre) && !related.some((r) => r.nombre === h.nombre))
+        .sort((a, b) => (b.estrellas || 0) - (a.estrellas || 0))
+        .slice(0, 3 - related.length);
+      related = [...related, ...remaining];
+    }
+
+    return {
+      params: { slug: item.slug || toSlug(item.nombre) },
+      props: { item, related },
+    };
+  });
 }
 
-const { item } = Astro.props;
+const { item, related = [] } = Astro.props;
 
 if (!item) {
   return Astro.redirect('/en');
@@ -47,7 +67,7 @@ const ventajas = (item.ventajas_frente_saas_en && item.ventajas_frente_saas_en.l
   ? item.ventajas_frente_saas_en
   : item.ventajas_frente_saas;
 
-// Traducción al vuelo del mensaje de compose si no existe archivo oficial
+// Traducción del compose
 let dockerCompose = item.docker_compose || '';
 if (dockerCompose.includes('Este proyecto no incluye un archivo docker-compose')) {
   dockerCompose = `# This project does not include an official docker-compose file in the repository root.
@@ -55,12 +75,12 @@ if (dockerCompose.includes('Este proyecto no incluye un archivo docker-compose')
 # ${item.url_repo || 'https://github.com'}`;
 }
 
-// URLs del selector de idiomas actualizadas con slug
+// URLs selector de idiomas
 const currentSlug = item.slug || toSlug(item.nombre);
 const urlEs = `/herramienta/${currentSlug}`;
 const urlEn = `/en/herramienta/${currentSlug}`;
 
-// Objeto Schema.org estructurado en inglés
+// Schema.org JSON-LD en inglés
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
@@ -98,7 +118,7 @@ const jsonLd = {
     <link rel="alternate" hreflang="es" href={`https://selfhostdeck.com${urlEs}`} />
     <link rel="alternate" hreflang="x-default" href={`https://selfhostdeck.com${urlEn}`} />
 
-    <!-- Schema.org JSON-LD Structured Data -->
+    <!-- Schema.org JSON-LD -->
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
     <style>
@@ -116,7 +136,6 @@ const jsonLd = {
         line-height: 1.6;
       }
 
-      /* Barra superior con volver y selector de idioma */
       .top-nav {
         display: flex;
         justify-content: space-between;
@@ -251,7 +270,6 @@ const jsonLd = {
         font-weight: bold;
       }
 
-      /* Contenedor Docker Compose */
       .docker-box {
         background: #090d16;
         border: 1px solid #233147;
@@ -330,6 +348,71 @@ const jsonLd = {
       .btn:hover { 
         background: #0369a1; 
       }
+
+      /* Related tools section */
+      .related-section {
+        margin-top: 3.5rem;
+        padding-top: 2rem;
+        border-top: 1px solid #334155;
+      }
+
+      .related-header {
+        font-size: 1.3rem;
+        color: #ffffff;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+      }
+
+      .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+      }
+
+      .related-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 1.1rem;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+      }
+
+      .related-card:hover {
+        transform: translateY(-2px);
+        border-color: #38bdf8;
+      }
+
+      .related-card-title {
+        font-weight: 700;
+        color: #ffffff;
+        font-size: 1rem;
+        margin-bottom: 0.35rem;
+      }
+
+      .related-card-sub {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        line-height: 1.4;
+        margin-bottom: 0.75rem;
+      }
+
+      .related-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.75rem;
+        color: #38bdf8;
+        font-weight: 600;
+      }
+
+      .related-card-stars {
+        color: #f59e0b;
+      }
     </style>
   </head>
   <body>
@@ -406,6 +489,27 @@ const jsonLd = {
     <a href={item.url_repo} target="_blank" rel="noopener noreferrer" class="btn">
       View code on GitHub &rarr;
     </a>
+
+    {/* Section of recommended tools */}
+    {related.length > 0 && (
+      <section class="related-section">
+        <h3 class="related-header">Other recommended tools</h3>
+        <div class="related-grid">
+          {related.map((r: any) => (
+            <a href={`/en/herramienta/${r.slug || toSlug(r.nombre)}`} class="related-card">
+              <div>
+                <div class="related-card-title">{r.nombre}</div>
+                <div class="related-card-sub">Alt. to {r.saas_alternativa}</div>
+              </div>
+              <div class="related-card-footer">
+                <span class="related-card-stars">★ {r.estrellas}</span>
+                <span>View tool &rarr;</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
 
     <script is:inline>
       const copyBtn = document.getElementById('copyBtn');

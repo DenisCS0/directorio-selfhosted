@@ -1,5 +1,6 @@
 ---
 import { createClient } from '@supabase/supabase-js';
+import { toSlug } from '../../utils/slug';
 
 export async function getStaticPaths() {
   const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
@@ -11,7 +12,7 @@ export async function getStaticPaths() {
     .select('*');
 
   return (herramientas || []).map((item) => ({
-    params: { id: String(item.id) },
+    params: { slug: item.slug || toSlug(item.nombre) },
     props: { item },
   }));
 }
@@ -39,9 +40,10 @@ const getDifficultyStyle = (diff: string = '') => {
 
 const diffStyle = getDifficultyStyle(item.dificultad_docker || '');
 
-// URLs del selector de idiomas
-const urlEs = `/herramienta/${item.id}`;
-const urlEn = `/en/herramienta/${item.id}`;
+// URLs del selector de idiomas con slug
+const currentSlug = item.slug || toSlug(item.nombre);
+const urlEs = `/herramienta/${currentSlug}`;
+const urlEn = `/en/herramienta/${currentSlug}`;
 ---
 
 <!DOCTYPE html>
@@ -50,7 +52,15 @@ const urlEn = `/en/herramienta/${item.id}`;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{item.nombre} - Alternativa a {item.saas_alternativa} | SelfHostDeck</title>
+    <meta name="description" content={`Análisis detallado de ${item.nombre}, alternativa libre y autoalojada a ${item.saas_alternativa}. Configuración con Docker y ventajas frente al SaaS.`} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- SEO Canonical y Hreflang -->
+    <link rel="canonical" href={`https://selfhostdeck.com${urlEs}`} />
+    <link rel="alternate" hreflang="es" href={`https://selfhostdeck.com${urlEs}`} />
+    <link rel="alternate" hreflang="en" href={`https://selfhostdeck.com${urlEn}`} />
+    <link rel="alternate" hreflang="x-default" href={`https://selfhostdeck.com${urlEn}`} />
+
     <style>
       * {
         box-sizing: border-box;

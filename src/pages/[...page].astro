@@ -1,16 +1,7 @@
 ---
 import { createClient } from '@supabase/supabase-js';
 import Footer from '../components/Footer.astro';
-
-// Función para transformar nombres a slugs limpios (ej: "Google Photos" -> "google-photos")
-function toSlug(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
+import { toSlug } from '../utils/slug';
 
 export async function getStaticPaths({ paginate }) {
   const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
@@ -30,9 +21,10 @@ export async function getStaticPaths({ paginate }) {
   const items = herramientas || [];
   const categorias = ['Todas', ...new Set(items.map((h) => h.categoria).filter(Boolean))];
 
-  // Datos ligeros para la búsqueda global en memoria
+  // Datos ligeros para la búsqueda global en memoria con slug incluido
   const catalogoCompleto = items.map((h) => ({
     id: h.id,
+    slug: h.slug || toSlug(h.nombre || ''),
     nombre: h.nombre || '',
     saas_alternativa: h.saas_alternativa || '',
     categoria: h.categoria || '',
@@ -515,7 +507,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
           <div>
             <span class="badge">{item.categoria}</span>
             <h2>
-              <a href={`/herramienta/${item.id}`} class="main-link">
+              <a href={`/herramienta/${item.slug || toSlug(item.nombre)}`} class="main-link">
                 {item.nombre}
               </a>
             </h2>
@@ -587,6 +579,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
   <script>
     interface Tool {
       id: string | number;
+      slug: string;
       nombre: string;
       saas_alternativa: string;
       categoria: string;
@@ -638,7 +631,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
           <div>
             <span class="badge">${escaparHTML(item.categoria)}</span>
             <h2>
-              <a href="/herramienta/${escaparHTML(String(item.id))}" class="main-link">
+              <a href="/herramienta/${escaparHTML(item.slug)}" class="main-link">
                 ${escaparHTML(item.nombre)}
               </a>
             </h2>

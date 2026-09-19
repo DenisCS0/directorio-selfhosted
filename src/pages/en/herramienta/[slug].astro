@@ -1,5 +1,6 @@
 ---
 import { createClient } from '@supabase/supabase-js';
+import { toSlug } from '../../../utils/slug';
 
 export async function getStaticPaths() {
   const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
@@ -11,7 +12,7 @@ export async function getStaticPaths() {
     .select('*');
 
   return (herramientas || []).map((item) => ({
-    params: { id: String(item.id) },
+    params: { slug: item.slug || toSlug(item.nombre) },
     props: { item },
   }));
 }
@@ -42,8 +43,8 @@ const diffInfo = getDifficultyInfo(item.dificultad_docker || '');
 // Fallbacks de idiomas
 const categoria = item.categoria_en || item.categoria;
 const descripcion = item.descripcion_en || item.descripcion;
-const ventajas = (item.ventajas_frente_saas_en && item.ventajas_frente_saas_en.length > 0) 
-  ? item.ventajas_frente_saas_en 
+const ventajas = (item.ventajas_frente_saas_en && item.ventajas_frente_saas_en.length > 0)
+  ? item.ventajas_frente_saas_en
   : item.ventajas_frente_saas;
 
 // Traducción al vuelo del mensaje de compose si no existe archivo oficial
@@ -54,9 +55,10 @@ if (dockerCompose.includes('Este proyecto no incluye un archivo docker-compose')
 # ${item.url_repo || 'https://github.com'}`;
 }
 
-// URLs del selector de idiomas
-const urlEs = `/herramienta/${item.id}`;
-const urlEn = `/en/herramienta/${item.id}`;
+// URLs del selector de idiomas actualizadas con slug
+const currentSlug = item.slug || toSlug(item.nombre);
+const urlEs = `/herramienta/${currentSlug}`;
+const urlEn = `/en/herramienta/${currentSlug}`;
 ---
 
 <!DOCTYPE html>
@@ -65,7 +67,15 @@ const urlEn = `/en/herramienta/${item.id}`;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{item.nombre} - Alternative to {item.saas_alternativa} | SelfHostDeck</title>
+    <meta name="description" content={`In-depth breakdown of ${item.nombre}, a self-hosted open-source alternative to ${item.saas_alternativa}. Docker configuration and benefits over cloud SaaS.`} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- SEO Canonical & Hreflang -->
+    <link rel="canonical" href={`https://selfhostdeck.com${urlEn}`} />
+    <link rel="alternate" hreflang="en" href={`https://selfhostdeck.com${urlEn}`} />
+    <link rel="alternate" hreflang="es" href={`https://selfhostdeck.com${urlEs}`} />
+    <link rel="alternate" hreflang="x-default" href={`https://selfhostdeck.com${urlEn}`} />
+
     <style>
       * {
         box-sizing: border-box;
@@ -395,13 +405,13 @@ const urlEn = `/en/herramienta/${item.id}`;
           }
         });
       }
-    const btnVolver = document.getElementById('btnVolver');
-  const paginaGuardada = sessionStorage.getItem('ultimaPaginaCatalogo');
 
-  if (btnVolver && paginaGuardada && paginaGuardada !== '1') {
-    btnVolver.href = `/en/${paginaGuardada}`;
-  }
-  
+      const btnVolver = document.getElementById('btnVolver');
+      const paginaGuardada = sessionStorage.getItem('ultimaPaginaCatalogo');
+
+      if (btnVolver && paginaGuardada && paginaGuardada !== '1') {
+        btnVolver.href = `/en/${paginaGuardada}`;
+      }
     </script>
   </body>
 </html>

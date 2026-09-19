@@ -1,16 +1,7 @@
 ---
 import { createClient } from '@supabase/supabase-js';
 import Footer from '../../components/Footer.astro';
-
-// Función para transformar nombres a slugs limpios (ej: "Google Photos" -> "google-photos")
-function toSlug(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
+import { toSlug } from '../../utils/slug';
 
 export async function getStaticPaths({ paginate }) {
   const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
@@ -30,9 +21,10 @@ export async function getStaticPaths({ paginate }) {
   const items = herramientas || [];
   const categorias = ['All', ...new Set(items.map((h) => h.categoria_en || h.categoria).filter(Boolean))];
 
-  // Datos ligeros para la búsqueda global en memoria (en inglés)
+  // Datos ligeros para la búsqueda global en memoria con slug incluido
   const catalogoCompleto = items.map((h) => ({
     id: h.id,
+    slug: h.slug || toSlug(h.nombre || ''),
     nombre: h.nombre || '',
     saas_alternativa: h.saas_alternativa || '',
     categoria: h.categoria_en || h.categoria || '',
@@ -64,7 +56,10 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
 
   <!-- Metadatos SEO y Open Graph -->
   <meta name="description" content="Discover the best self-hosted and open-source alternatives to commercial SaaS. Take full control of your data and homelab." />
-  <link rel="canonical" href={`https://selfhostdeck.com${page.url.current}`} />
+  <link rel="canonical" href={`https://selfhostdeck.com${urlEn}`} />
+  <link rel="alternate" hreflang="en" href={`https://selfhostdeck.com${urlEn}`} />
+  <link rel="alternate" hreflang="es" href={`https://selfhostdeck.com${urlEs}`} />
+  <link rel="alternate" hreflang="x-default" href={`https://selfhostdeck.com${urlEn}`} />
 
   <!-- Tarjetas para Redes -->
   <meta property="og:type" content="website" />
@@ -515,7 +510,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
           <div>
             <span class="badge">{item.categoria_en || item.categoria}</span>
             <h2>
-              <a href={`/en/herramienta/${item.id}`} class="main-link">
+              <a href={`/en/herramienta/${item.slug || toSlug(item.nombre)}`} class="main-link">
                 {item.nombre}
               </a>
             </h2>
@@ -587,6 +582,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
   <script>
     interface Tool {
       id: string | number;
+      slug: string;
       nombre: string;
       saas_alternativa: string;
       categoria: string;
@@ -638,7 +634,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
           <div>
             <span class="badge">${escaparHTML(item.categoria)}</span>
             <h2>
-              <a href="/en/herramienta/${escaparHTML(String(item.id))}" class="main-link">
+              <a href="/en/herramienta/${escaparHTML(item.slug)}" class="main-link">
                 ${escaparHTML(item.nombre)}
               </a>
             </h2>

@@ -1,6 +1,7 @@
 ---
 import { createClient } from '@supabase/supabase-js';
 import Footer from '../../components/Footer.astro';
+import { toSlug } from '../../utils/slug';
 
 export async function getStaticPaths() {
   const supabaseUrl = 'https://lffmkpexmtjwtvlgvkcj.supabase.co';
@@ -27,12 +28,7 @@ export async function getStaticPaths() {
 
     servicios.forEach((servicio: string) => {
       if (!servicio) return;
-      const slug = servicio
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+      const slug = toSlug(servicio);
 
       if (!mapaAlternativas[slug]) {
         mapaAlternativas[slug] = {
@@ -55,6 +51,7 @@ export async function getStaticPaths() {
 }
 
 const { servicio, herramientas } = Astro.props;
+const { slug } = Astro.params;
 ---
 
 <html lang="es">
@@ -64,6 +61,13 @@ const { servicio, herramientas } = Astro.props;
   <title>Mejores alternativas autoalojadas a {servicio} (Open Source) | SelfHostDeck</title>
   <meta name="description" content={`Descubre las mejores alternativas libres, privadas y autoalojadas para reemplazar ${servicio}. Recupera el control de tus datos.`} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- SEO Canonical y Hreflang -->
+  <link rel="canonical" href={`https://selfhostdeck.com/alternativas/${slug}`} />
+  <link rel="alternate" hreflang="es" href={`https://selfhostdeck.com/alternativas/${slug}`} />
+  <link rel="alternate" hreflang="en" href={`https://selfhostdeck.com/en/alternatives/${slug}`} />
+  <link rel="alternate" hreflang="x-default" href={`https://selfhostdeck.com/en/alternatives/${slug}`} />
+
   <style>
     :root {
       --bg: #0b1120;
@@ -230,7 +234,7 @@ const { servicio, herramientas } = Astro.props;
 
     <div class="grid">
       {herramientas.map((tool) => (
-        <a href={`/herramienta/${tool.id}`} class="card">
+        <a href={`/herramienta/${tool.slug || toSlug(tool.nombre)}`} class="card">
           <div>
             <span class="badge">{tool.categoria}</span>
             <h2 class="card-title">{tool.nombre}</h2>

@@ -115,7 +115,7 @@ const { slug } = Astro.params;
 
     header {
       text-align: center;
-      margin-bottom: 3rem;
+      margin-bottom: 2.5rem;
     }
 
     h1 {
@@ -136,6 +136,59 @@ const { slug } = Astro.params;
       max-width: 700px;
       margin: 0 auto;
       line-height: 1.6;
+    }
+
+    /* Banner CTA hacia el Stacker */
+    .stacker-cta-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+
+    .stacker-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--card-border);
+      padding: 0.6rem 1.2rem;
+      border-radius: 9999px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .stacker-cta-btn:hover {
+      border-color: var(--primary);
+      background: rgba(56, 189, 248, 0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--primary-glow);
+    }
+
+    .stacker-badge {
+      background: #0284c7;
+      color: #ffffff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .stacker-cta-btn strong {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .stacker-arrow {
+      color: var(--primary);
+      transition: transform 0.2s ease;
+    }
+
+    .stacker-cta-btn:hover .stacker-arrow {
+      transform: translateX(3px);
     }
 
     .counter-bar {
@@ -213,6 +266,14 @@ const { slug } = Astro.params;
       color: var(--primary);
       font-weight: 600;
     }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 2rem; }
+      .stacker-cta-btn {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.9rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -226,6 +287,14 @@ const { slug } = Astro.params;
       <p class="subtitle">
         Herramientas libres y autoalojadas para reemplazar {servicio}. Conserva el control total de tus datos y ahorra en costes mensuales de suscripción.
       </p>
+
+      <div class="stacker-cta-wrapper">
+        <a href="/stacker" class="stacker-cta-btn">
+          <span class="stacker-badge">NUEVO</span>
+          <span>¿Quieres desplegarlas? <strong>Crea tu Docker Compose en el Stacker</strong></span>
+          <span class="stacker-arrow">→</span>
+        </a>
+      </div>
     </header>
 
     <div class="counter-bar">

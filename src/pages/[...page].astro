@@ -118,6 +118,67 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       line-height: 1.5;
     }
 
+    /* Botonera de herramientas destacadas */
+    .cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.85rem;
+      margin: 1.5rem auto 2.5rem auto;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cta-btn-primary {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    }
+
+    .cta-btn-primary:hover {
+      background: #0369a1;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45);
+    }
+
+    .cta-btn-secondary {
+      background: #131d31;
+      color: #e2e8f0;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .cta-btn-secondary:hover {
+      background: #1e293b;
+      border-color: var(--primary);
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.15);
+    }
+
+    .cta-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+
     /* Contenedor del Buscador */
     .search-wrapper {
       max-width: 680px;
@@ -230,7 +291,6 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       box-shadow: 0 10px 25px -5px var(--primary-glow);
     }
 
-    /* Stretched link: hace clickable toda la tarjeta */
     .main-link {
       color: #ffffff;
       text-decoration: none;
@@ -272,7 +332,6 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
     }
     .reemplaza strong { color: #f59e0b; }
 
-    /* Estilo del enlace a la alternativa */
     .sub-link {
       color: #cbd5e1;
       text-decoration: underline;
@@ -461,17 +520,17 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
     <h1>Directorio Open-Source Self-Hosted</h1>
     <p class="subtitulo">Alternativas privadas y gratuitas a herramientas de pago, analizadas localmente por IA.</p>
 
-    <div style="margin-top: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: center;">
-      <a 
-        href="/stacks" 
-        style="display: inline-flex; align-items: center; gap: 0.5rem; background: #0284c7; color: #ffffff; font-size: 0.9rem; font-weight: 600; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); transition: transform 0.2s, background 0.2s;"
-        onmouseover="this.style.background='#0369a1'; this.style.transform='translateY(-1px)';"
-        onmouseout="this.style.background='#0284c7'; this.style.transform='translateY(0)';"
-      >
+    <!-- Botonera de navegación destacada -->
+    <div class="cta-group">
+      <a href="/stacks" class="cta-btn cta-btn-primary">
         ⚡ Explorar Homelab Stacks Docker
       </a>
+      <a href="/stacker" class="cta-btn cta-btn-secondary">
+        🧩 Docker Compose Stacker
+        <span class="cta-badge">Nuevo</span>
+      </a>
     </div>
-      
+
     <div class="search-wrapper">
       <div class="search-input-group">
         <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

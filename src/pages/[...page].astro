@@ -21,7 +21,7 @@ export async function getStaticPaths({ paginate }) {
   const items = herramientas || [];
   const categorias = ['Todas', ...new Set(items.map((h) => h.categoria).filter(Boolean))];
 
-  // Datos ligeros para la búsqueda global en memoria con slug incluido
+  // Datos ligeros para la búsqueda global en memoria (incluyendo created_at para el badge)
   const catalogoCompleto = items.map((h) => ({
     id: h.id,
     slug: h.slug || toSlug(h.nombre || ''),
@@ -30,6 +30,7 @@ export async function getStaticPaths({ paginate }) {
     categoria: h.categoria || '',
     descripcion: h.descripcion || '',
     estrellas: h.estrellas || 0,
+    created_at: h.created_at || null,
   }));
 
   return paginate(items, {
@@ -45,6 +46,9 @@ const { page, categorias, catalogoCompleto } = Astro.props;
 const currentNum = page.currentPage;
 const urlEs = currentNum === 1 ? '/' : `/${currentNum}`;
 const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
+
+// Días de antigüedad máxima para considerar una herramienta como "Nueva"
+const DIAS_LIMITE_NUEVO = 14;
 ---
 
 <html lang="es">
@@ -53,6 +57,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SelfHostDeck | Directorio Self-Hosted vs SaaS (Página {page.currentPage})</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="alternate" type="application/rss+xml" title="SelfHostDeck RSS Feed" href="https://selfhostdeck.com/rss.xml" />
 
   <!-- Metadatos SEO y Open Graph -->
   <meta name="description" content="Descubre las mejores alternativas autoalojadas y de código abierto al software SaaS comercial. Controla tus datos y tu homelab." />
@@ -289,6 +294,48 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       transform: translateY(-3px);
       border-color: var(--primary);
       box-shadow: 0 10px 25px -5px var(--primary-glow);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-top .badge {
+      margin-bottom: 0;
+    }
+
+    .badge-nuevo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 0.18rem 0.5rem;
+      border-radius: 6px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #34d399;
+      box-shadow: 0 0 6px #34d399;
+      animation: pulsoVerde 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulsoVerde {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
     }
 
     .main-link {
@@ -561,38 +608,53 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
   <main class="grid" id="contenedor-cards">
     <!-- Contenedor estático paginado -->
     <div id="cards-estaticas" style="display: contents;">
-      {page.data.map((item) => (
-        <article class="card">
-          <div>
-            <span class="badge">{item.categoria}</span>
-            <h2>
-              <a href={`/herramienta/${item.slug || toSlug(item.nombre)}`} class="main-link">
-                {item.nombre}
-              </a>
-            </h2>
-            <p class="reemplaza">
-              <strong>Sustituye a:</strong>{" "}
-              {item.saas_alternativa ? item.saas_alternativa.split('/').map((s: string, idx: number, arr: string[]) => {
-                const name = s.trim();
-                const slug = toSlug(name);
-                return (
-                  <>
-                    <a href={`/alternativas/${slug}`} class="sub-link">{name}</a>
-                    {idx < arr.length - 1 ? ' / ' : ''}
-                  </>
-                );
-              }) : 'N/A'}
-            </p>
-            <p class="resumen">{item.descripcion}</p>
-          </div>
-          <div class="meta">
-            <span class="estrellas">★ {item.estrellas}</span>
-            <span class="btn">
-              Ver análisis <span>&rarr;</span>
-            </span>
-          </div>
-        </article>
-      ))}
+      {page.data.map((item) => {
+        const dias = item.created_at
+          ? (Date.now() - new Date(item.created_at).getTime()) / (1000 * 60 * 60 * 24)
+          : 999;
+        const esNueva = dias <= DIAS_LIMITE_NUEVO;
+
+        return (
+          <article class="card">
+            <div>
+              <div class="card-top">
+                <span class="badge">{item.categoria}</span>
+                {esNueva && (
+                  <span class="badge-nuevo">
+                    <span class="pulse-dot"></span>
+                    Nuevo
+                  </span>
+                )}
+              </div>
+              <h2>
+                <a href={`/herramienta/${item.slug || toSlug(item.nombre)}`} class="main-link">
+                  {item.nombre}
+                </a>
+              </h2>
+              <p class="reemplaza">
+                <strong>Sustituye a:</strong>{" "}
+                {item.saas_alternativa ? item.saas_alternativa.split('/').map((s: string, idx: number, arr: string[]) => {
+                  const name = s.trim();
+                  const slug = toSlug(name);
+                  return (
+                    <>
+                      <a href={`/alternativas/${slug}`} class="sub-link">{name}</a>
+                      {idx < arr.length - 1 ? ' / ' : ''}
+                    </>
+                  );
+                }) : 'N/A'}
+              </p>
+              <p class="resumen">{item.descripcion}</p>
+            </div>
+            <div class="meta">
+              <span class="estrellas">★ {item.estrellas}</span>
+              <span class="btn">
+                Ver análisis <span>&rarr;</span>
+              </span>
+            </div>
+          </article>
+        );
+      })}
     </div>
 
     <!-- Contenedor dinámico para búsquedas globales -->
@@ -644,6 +706,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
       categoria: string;
       descripcion: string;
       estrellas: number;
+      created_at?: string | null;
     }
 
     function toSlug(text: string): string {
@@ -668,6 +731,7 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
 
     const textoContadorOriginal = contador?.textContent || '';
     let currentCategory = 'todas';
+    const DIAS_LIMITE_NUEVO = 14;
 
     function escaparHTML(texto: string) {
       const div = document.createElement('div');
@@ -685,10 +749,22 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
           }).join('')
         : 'N/A';
 
+      const dias = item.created_at
+        ? (Date.now() - new Date(item.created_at).getTime()) / (1000 * 60 * 60 * 24)
+        : 999;
+      const esNueva = dias <= DIAS_LIMITE_NUEVO;
+
+      const badgeNuevoHtml = esNueva
+        ? `<span class="badge-nuevo"><span class="pulse-dot"></span>Nuevo</span>`
+        : '';
+
       return `
         <article class="card">
           <div>
-            <span class="badge">${escaparHTML(item.categoria)}</span>
+            <div class="card-top">
+              <span class="badge">${escaparHTML(item.categoria)}</span>
+              ${badgeNuevoHtml}
+            </div>
             <h2>
               <a href="/herramienta/${escaparHTML(item.slug)}" class="main-link">
                 ${escaparHTML(item.nombre)}

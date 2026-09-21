@@ -33,6 +33,13 @@ const CATEGORIAS_EN: Record<string, string> = {
   <title>Production-Ready Homelab Docker Stacks | SelfHostDeck</title>
   <meta name="description" content="Pre-configured, production-ready multi-container Docker Compose stacks for homelabs. Linked networks, persistent storage, and optimized services." />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="canonical" href="https://selfhostdeck.com/en/stacks" />
+
+  <!-- Bidirectional Hreflang Tags -->
+  <link rel="alternate" hreflang="es" href="https://selfhostdeck.com/stacks" />
+  <link rel="alternate" hreflang="en" href="https://selfhostdeck.com/en/stacks" />
+  <link rel="alternate" hreflang="x-default" href="https://selfhostdeck.com/en/stacks" />
+
   <style>
     :root {
       --bg: #0b1120;
@@ -291,7 +298,11 @@ const CATEGORIAS_EN: Record<string, string> = {
         );
       })}
     </div>
+
+    <!-- Footer integrado dentro del contenedor con margen -->
+    <div style="margin-top: 4rem;">
+      <Footer />
+    </div>
   </div>
-  <Footer />
 </body>
 </html>

@@ -17,7 +17,15 @@ const { data: stacks } = await supabase
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Homelab Stacks Docker | SelfHostDeck</title>
+  <meta name="description" content="Arquitecturas multicontenedor listas para producción en Docker Compose. Servicios enlazados con volúmenes y redes ya configuradas." />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="canonical" href="https://selfhostdeck.com/stacks" />
+
+  <!-- Etiquetas Hreflang Bidireccionales -->
+  <link rel="alternate" hreflang="es" href="https://selfhostdeck.com/stacks" />
+  <link rel="alternate" hreflang="en" href="https://selfhostdeck.com/en/stacks" />
+  <link rel="alternate" hreflang="x-default" href="https://selfhostdeck.com/en/stacks" />
+
   <style>
     :root {
       --bg: #0b1120;
@@ -270,7 +278,11 @@ const { data: stacks } = await supabase
         </a>
       ))}
     </div>
+
+    <!-- Footer integrado dentro del contenedor con margen -->
+    <div style="margin-top: 4rem;">
+      <Footer />
+    </div>
   </div>
-  <Footer />
 </body>
 </html>

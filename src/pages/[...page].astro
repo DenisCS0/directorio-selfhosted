@@ -49,6 +49,26 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
 
 // Días de antigüedad máxima para considerar una herramienta como "Nueva"
 const DIAS_LIMITE_NUEVO = 14;
+
+// Estructura JSON-LD para Google (Schema.org)
+const schemaItemList = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": `SelfHostDeck | Directorio Self-Hosted vs SaaS (Página ${page.currentPage})`,
+  "description": "Descubre las mejores alternativas autoalojadas y de código abierto al software SaaS comercial.",
+  "url": `https://selfhostdeck.com${urlEs === '/' ? '' : urlEs}`,
+  "mainEntity": {
+    "@type": "ItemList",
+    "numberOfItems": page.data.length,
+    "itemListElement": page.data.map((item: any, idx: number) => ({
+      "@type": "ListItem",
+      "position": page.start + idx + 1,
+      "name": item.nombre,
+      "url": `https://selfhostdeck.com/herramienta/${item.slug || toSlug(item.nombre)}`,
+      "description": item.descripcion
+    }))
+  }
+};
 ---
 
 <html lang="es">
@@ -59,9 +79,17 @@ const DIAS_LIMITE_NUEVO = 14;
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="alternate" type="application/rss+xml" title="SelfHostDeck RSS Feed" href="https://selfhostdeck.com/rss.xml" />
 
-  <!-- Metadatos SEO y Open Graph -->
+  <!-- Metadatos SEO y Canonical -->
   <meta name="description" content="Descubre las mejores alternativas autoalojadas y de código abierto al software SaaS comercial. Controla tus datos y tu homelab." />
   <link rel="canonical" href={`https://selfhostdeck.com${page.url.current === '/' ? '' : page.url.current}`} />
+
+  <!-- Etiquetas Hreflang Bidireccionales -->
+  <link rel="alternate" hreflang="es" href={`https://selfhostdeck.com${urlEs}`} />
+  <link rel="alternate" hreflang="en" href={`https://selfhostdeck.com${urlEn}`} />
+  <link rel="alternate" hreflang="x-default" href={`https://selfhostdeck.com${urlEn}`} />
+
+  <!-- Datos Estructurados JSON-LD (Schema.org) -->
+  <script type="application/ld+json" set:html={JSON.stringify(schemaItemList)} />
 
   <!-- Tarjetas para Discord, Twitter y Redes -->
   <meta property="og:type" content="website" />

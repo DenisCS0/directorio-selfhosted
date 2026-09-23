@@ -21,7 +21,7 @@ export async function getStaticPaths({ paginate }) {
   const items = herramientas || [];
   const categorias = ['All', ...new Set(items.map((h) => h.categoria_en || h.categoria).filter(Boolean))];
 
-  // Datos ligeros para la búsqueda global en memoria con slug y fecha incluidos
+  // Datos ligeros para la búsqueda global en memoria con hardware
   const catalogoCompleto = items.map((h) => ({
     id: h.id,
     slug: h.slug || toSlug(h.nombre || ''),
@@ -31,6 +31,8 @@ export async function getStaticPaths({ paginate }) {
     descripcion: h.descripcion_en || h.descripcion || '',
     estrellas: h.estrellas || 0,
     created_at: h.created_at || null,
+    ram_mb: h.ram_mb || 512,
+    compatible_arm: h.compatible_arm !== false,
   }));
 
   return paginate(items, {
@@ -49,6 +51,12 @@ const urlEn = currentNum === 1 ? '/en' : `/en/${currentNum}`;
 
 // Días de antigüedad máxima para considerar una herramienta como "New"
 const DIAS_LIMITE_NUEVO = 14;
+
+// Función auxiliar para formatear la RAM
+function formatRam(mb: number | undefined | null) {
+  const val = mb || 512;
+  return val >= 1024 ? `${val / 1024} GB` : `${val} MB`;
+}
 ---
 
 <html lang="en">
@@ -265,6 +273,43 @@ const DIAS_LIMITE_NUEVO = 14;
       border-color: #38bdf8;
     }
 
+    /* Filtros de hardware */
+    .hardware-filters {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 0.15rem;
+    }
+
+    .hw-toggle {
+      background: #131d31;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 0.35rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .hw-toggle:hover {
+      border-color: #38bdf8;
+      color: #ffffff;
+    }
+
+    .hw-toggle.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+    }
+
     /* Contador */
     .counter {
       color: var(--text-muted);
@@ -305,6 +350,7 @@ const DIAS_LIMITE_NUEVO = 14;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 0.75rem;
+      min-height: 26px;
     }
 
     .card-top .badge {
@@ -326,6 +372,7 @@ const DIAS_LIMITE_NUEVO = 14;
       border-radius: 6px;
       position: relative;
       z-index: 2;
+      white-space: nowrap;
     }
 
     .pulse-dot {
@@ -402,18 +449,58 @@ const DIAS_LIMITE_NUEVO = 14;
       margin-bottom: 1.25rem;
     }
 
+    /* Pie de la tarjeta: Estrellas + RAM + ARM64 agrupados */
     .meta {
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-top: 1px solid var(--card-border);
       padding-top: 1rem;
+      gap: 0.6rem;
+    }
+
+    .meta-left {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 2;
+    }
+
+    .badge-ram {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      background: rgba(56, 189, 248, 0.1);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 5px;
+      line-height: 1.2;
+    }
+
+    .badge-arm {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(168, 85, 247, 0.12);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.4rem;
+      border-radius: 5px;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
     }
 
     .estrellas {
       color: #facc15;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 600;
+      margin-right: 0.15rem;
     }
 
     .btn {
@@ -423,6 +510,7 @@ const DIAS_LIMITE_NUEVO = 14;
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
+      white-space: nowrap;
       transition: gap 0.15s ease;
     }
 
@@ -597,12 +685,23 @@ const DIAS_LIMITE_NUEVO = 14;
         />
       </div>
 
+      <!-- Filtro por categorías -->
       <div class="filter-pills" id="contenedor-filtros">
         {categorias.map((cat) => (
           <button class={`pill ${cat === 'All' ? 'active' : ''}`} data-cat={cat.toLowerCase()}>
             {cat}
           </button>
         ))}
+      </div>
+
+      <!-- Filtros de Hardware / Recursos -->
+      <div class="hardware-filters" id="hardware-filters">
+        <button type="button" class="hw-toggle" id="toggle-low-ram" data-active="false">
+          ⚡ Low RAM (&le; 512 MB)
+        </button>
+        <button type="button" class="hw-toggle" id="toggle-arm" data-active="false">
+          🥧 ARM / Pi Compatible
+        </button>
       </div>
     </div>
   </header>
@@ -653,7 +752,13 @@ const DIAS_LIMITE_NUEVO = 14;
               <p class="resumen">{item.descripcion_en || item.descripcion}</p>
             </div>
             <div class="meta">
-              <span class="estrellas">★ {item.estrellas}</span>
+              <div class="meta-left">
+                <span class="estrellas">★ {item.estrellas}</span>
+                <span class="badge-ram">⚡ {formatRam(item.ram_mb)}</span>
+                {item.compatible_arm !== false && (
+                  <span class="badge-arm">ARM64</span>
+                )}
+              </div>
               <span class="btn">
                 View analysis <span>&rarr;</span>
               </span>
@@ -713,6 +818,8 @@ const DIAS_LIMITE_NUEVO = 14;
       descripcion: string;
       estrellas: number;
       created_at?: string | null;
+      ram_mb?: number;
+      compatible_arm?: boolean;
     }
 
     function toSlug(text: string): string {
@@ -722,6 +829,11 @@ const DIAS_LIMITE_NUEVO = 14;
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
+    }
+
+    function formatRam(mb: number | undefined | null): string {
+      const val = mb || 512;
+      return val >= 1024 ? `${val / 1024} GB` : `${val} MB`;
     }
 
     const catalogoEl = document.getElementById('catalogo-datos');
@@ -735,8 +847,13 @@ const DIAS_LIMITE_NUEVO = 14;
     const cardsEstaticas = document.getElementById('cards-estaticas');
     const cardsDinamicas = document.getElementById('cards-dinamicas');
 
+    const toggleLowRam = document.getElementById('toggle-low-ram') as HTMLButtonElement;
+    const toggleArm = document.getElementById('toggle-arm') as HTMLButtonElement;
+
     const textoContadorOriginal = contador?.textContent || '';
     let currentCategory = 'all';
+    let filterLowRam = false;
+    let filterArm = false;
     const DIAS_LIMITE_NUEVO = 14;
 
     function escaparHTML(texto: string) {
@@ -764,6 +881,10 @@ const DIAS_LIMITE_NUEVO = 14;
         ? `<span class="badge-nuevo"><span class="pulse-dot"></span>New</span>`
         : '';
 
+      const badgeArmHtml = item.compatible_arm !== false
+        ? `<span class="badge-arm">ARM64</span>`
+        : '';
+
       return `
         <article class="card">
           <div>
@@ -780,7 +901,11 @@ const DIAS_LIMITE_NUEVO = 14;
             <p class="resumen">${escaparHTML(item.descripcion)}</p>
           </div>
           <div class="meta">
-            <span class="estrellas">★ ${item.estrellas}</span>
+            <div class="meta-left">
+              <span class="estrellas">★ ${item.estrellas}</span>
+              <span class="badge-ram">⚡ ${formatRam(item.ram_mb)}</span>
+              ${badgeArmHtml}
+            </div>
             <span class="btn">
               View analysis <span>&rarr;</span>
             </span>
@@ -791,7 +916,7 @@ const DIAS_LIMITE_NUEVO = 14;
 
     function filtrarGlobal() {
       const query = buscador.value.toLowerCase().trim();
-      const estaBuscando = query !== '' || currentCategory !== 'all';
+      const estaBuscando = query !== '' || currentCategory !== 'all' || filterLowRam || filterArm;
 
       if (!estaBuscando) {
         if (cardsEstaticas) cardsEstaticas.style.display = 'contents';
@@ -820,7 +945,10 @@ const DIAS_LIMITE_NUEVO = 14;
           currentCategory === 'all' ||
           item.categoria.toLowerCase() === currentCategory;
 
-        return matchText && matchCat;
+        const matchRam = !filterLowRam || (item.ram_mb !== undefined && item.ram_mb <= 512);
+        const matchArm = !filterArm || item.compatible_arm !== false;
+
+        return matchText && matchCat && matchRam && matchArm;
       });
 
       if (cardsDinamicas) {
@@ -845,6 +973,18 @@ const DIAS_LIMITE_NUEVO = 14;
         currentCategory = pill.dataset.cat || 'all';
         filtrarGlobal();
       });
+    });
+
+    toggleLowRam?.addEventListener('click', () => {
+      filterLowRam = !filterLowRam;
+      toggleLowRam.classList.toggle('active', filterLowRam);
+      filtrarGlobal();
+    });
+
+    toggleArm?.addEventListener('click', () => {
+      filterArm = !filterArm;
+      toggleArm.classList.toggle('active', filterArm);
+      filtrarGlobal();
     });
   </script>
 

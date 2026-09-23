@@ -14,14 +14,12 @@ export async function getStaticPaths() {
   const allTools = herramientas || [];
 
   return allTools.map((item) => {
-    // 1. Filtrar herramientas de la misma categoría excluyendo la actual
     const sameCategory = allTools
       .filter((h) => (h.id ? h.id !== item.id : h.nombre !== item.nombre) && h.categoria === item.categoria)
       .sort((a, b) => (b.estrellas || 0) - (a.estrellas || 0));
 
     let related = sameCategory.slice(0, 3);
 
-    // 2. Rellenar con más populares si faltan
     if (related.length < 3) {
       const remaining = allTools
         .filter((h) => (h.id ? h.id !== item.id : h.nombre !== item.nombre) && !related.some((r) => r.nombre === h.nombre))
@@ -43,7 +41,11 @@ if (!item) {
   return Astro.redirect('/en');
 }
 
-// Mapeo y traducción de dificultad para Docker
+function formatRam(mb: number | undefined | null) {
+  const val = mb || 512;
+  return val >= 1024 ? `${val / 1024} GB` : `${val} MB`;
+}
+
 const getDifficultyInfo = (diff: string = '') => {
   const d = diff.toLowerCase();
   if (d.includes('fácil') || d.includes('facil') || d.includes('baja') || d.includes('easy') || d.includes('low')) {
@@ -60,14 +62,12 @@ const getDifficultyInfo = (diff: string = '') => {
 
 const diffInfo = getDifficultyInfo(item.dificultad_docker || '');
 
-// Fallbacks de idiomas
 const categoria = item.categoria_en || item.categoria;
 const descripcion = item.descripcion_en || item.descripcion;
 const ventajas = (item.ventajas_frente_saas_en && item.ventajas_frente_saas_en.length > 0)
   ? item.ventajas_frente_saas_en
   : item.ventajas_frente_saas;
 
-// Traducción del compose
 let dockerCompose = item.docker_compose || '';
 if (dockerCompose.includes('Este proyecto no incluye un archivo docker-compose')) {
   dockerCompose = `# This project does not include an official docker-compose file in the repository root.
@@ -75,12 +75,10 @@ if (dockerCompose.includes('Este proyecto no incluye un archivo docker-compose')
 # ${item.url_repo || 'https://github.com'}`;
 }
 
-// URLs selector de idiomas
 const currentSlug = item.slug || toSlug(item.nombre);
 const urlEs = `/herramienta/${currentSlug}`;
 const urlEn = `/en/herramienta/${currentSlug}`;
 
-// Schema.org JSON-LD en inglés
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
@@ -112,19 +110,15 @@ const jsonLd = {
     <meta name="description" content={`In-depth breakdown of ${item.nombre}, a self-hosted open-source alternative to ${item.saas_alternativa}. Docker configuration and benefits over cloud SaaS.`} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <!-- SEO Canonical & Hreflang -->
     <link rel="canonical" href={`https://selfhostdeck.com${urlEn}`} />
     <link rel="alternate" hreflang="en" href={`https://selfhostdeck.com${urlEn}`} />
     <link rel="alternate" hreflang="es" href={`https://selfhostdeck.com${urlEs}`} />
     <link rel="alternate" hreflang="x-default" href={`https://selfhostdeck.com${urlEn}`} />
 
-    <!-- Schema.org JSON-LD -->
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
     <style>
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
 
       body {
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -177,10 +171,7 @@ const jsonLd = {
         transition: all 0.2s ease;
       }
 
-      .lang-switch a:hover {
-        color: #ffffff;
-      }
-
+      .lang-switch a:hover { color: #ffffff; }
       .lang-switch a.active {
         background: #0284c7;
         color: #ffffff;
@@ -194,7 +185,7 @@ const jsonLd = {
 
       .tag-group {
         display: flex;
-        gap: 0.6rem;
+        gap: 0.55rem;
         align-items: center;
         flex-wrap: wrap;
       }
@@ -219,6 +210,32 @@ const jsonLd = {
         gap: 0.35rem;
       }
 
+      .badge-ram {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        background: rgba(56, 189, 248, 0.1);
+        color: #7dd3fc;
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.3rem 0.8rem;
+        border-radius: 6px;
+      }
+
+      .badge-arm {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(168, 85, 247, 0.12);
+        color: #c084fc;
+        border: 1px solid rgba(168, 85, 247, 0.3);
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 0.3rem 0.75rem;
+        border-radius: 6px;
+        letter-spacing: 0.02em;
+      }
+
       h1 { 
         font-size: 2.25rem; 
         color: #ffffff; 
@@ -232,16 +249,14 @@ const jsonLd = {
         font-size: 1.1rem; 
         margin-bottom: 2rem; 
       }
-      .sub strong { 
-        color: #f59e0b; 
-      }
+      .sub strong { color: #f59e0b; }
 
-      .box {
-        background: #1e293b;
-        border: 1px solid #334155;
-        padding: 1.5rem 1.75rem;
-        border-radius: 10px;
-        margin-bottom: 1.5rem;
+      .box { 
+        background: #1e293b; 
+        border: 1px solid #334155; 
+        padding: 1.5rem 1.75rem; 
+        border-radius: 10px; 
+        margin-bottom: 1.5rem; 
       }
 
       h2 { 
@@ -249,7 +264,7 @@ const jsonLd = {
         font-size: 1.25rem; 
         margin-top: 0; 
         margin-bottom: 0.8rem; 
-        font-weight: 700;
+        font-weight: 700; 
       }
 
       ul.ventajas-list {
@@ -285,6 +300,8 @@ const jsonLd = {
         background: #131d2e;
         padding: 0.65rem 1.2rem;
         border-bottom: 1px solid #233147;
+        gap: 0.75rem;
+        flex-wrap: wrap;
       }
 
       .docker-filename {
@@ -297,25 +314,33 @@ const jsonLd = {
         font-weight: 500;
       }
 
-      .copy-btn {
+      .docker-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+
+      .tool-btn {
         display: inline-flex;
         align-items: center;
-        gap: 0.4rem;
+        gap: 0.35rem;
         background: #1e293b;
         color: #f1f5f9;
         border: 1px solid #334155;
         border-radius: 6px;
-        padding: 0.35rem 0.75rem;
+        padding: 0.35rem 0.7rem;
         font-size: 0.8rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
+        text-decoration: none;
       }
-      .copy-btn:hover {
+      .tool-btn:hover {
         background: #334155;
         border-color: #475569;
+        color: #ffffff;
       }
-      .copy-btn.copied {
+      .tool-btn.active-state {
         background: #052e16;
         border-color: #15803d;
         color: #4ade80;
@@ -345,11 +370,8 @@ const jsonLd = {
         font-weight: 600;
         transition: background-color 0.2s;
       }
-      .btn:hover { 
-        background: #0369a1; 
-      }
+      .btn:hover { background: #0369a1; }
 
-      /* Related tools section */
       .related-section {
         margin-top: 3.5rem;
         padding-top: 2rem;
@@ -410,9 +432,7 @@ const jsonLd = {
         font-weight: 600;
       }
 
-      .related-card-stars {
-        color: #f59e0b;
-      }
+      .related-card-stars { color: #f59e0b; }
     </style>
   </head>
   <body>
@@ -435,6 +455,12 @@ const jsonLd = {
           >
             Docker: {diffInfo.label}
           </span>
+        )}
+        <span class="badge-ram">
+          ⚡ {formatRam(item.ram_mb)} RAM
+        </span>
+        {item.compatible_arm !== false && (
+          <span class="badge-arm">ARM64</span>
         )}
       </div>
       <h1>{item.nombre}</h1>
@@ -472,14 +498,38 @@ const jsonLd = {
             </svg>
             <span>docker-compose.yml</span>
           </div>
-          <button class="copy-btn" id="copyBtn" type="button" aria-label="Copy Docker Compose">
-            <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-            <span class="btn-text">Copy</span>
-          </button>
+
+          <div class="docker-actions">
+            <button class="tool-btn" id="downloadBtn" type="button" aria-label="Download docker-compose.yml">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download</span>
+            </button>
+
+            <button class="tool-btn" id="copyBtn" type="button" aria-label="Copy Docker Compose">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span class="btn-text">Copy</span>
+            </button>
+
+            <button class="tool-btn" id="shareBtn" type="button" aria-label="Share tool">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+              <span class="btn-text">Share</span>
+            </button>
+          </div>
         </div>
+
         <div class="code-content">
           <pre class="code-block"><code id="dockerCode">{dockerCompose}</code></pre>
         </div>
@@ -490,7 +540,6 @@ const jsonLd = {
       View code on GitHub &rarr;
     </a>
 
-    {/* Section of recommended tools */}
     {related.length > 0 && (
       <section class="related-section">
         <h3 class="related-header">Other recommended tools</h3>
@@ -511,10 +560,13 @@ const jsonLd = {
       </section>
     )}
 
-    <script is:inline>
+    <script is:inline define:vars={{ toolName: item.nombre }}>
       const copyBtn = document.getElementById('copyBtn');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const shareBtn = document.getElementById('shareBtn');
       const dockerCode = document.getElementById('dockerCode');
 
+      // 1. Copy Compose
       if (copyBtn && dockerCode) {
         copyBtn.addEventListener('click', async () => {
           const text = dockerCode.innerText.trim();
@@ -522,15 +574,63 @@ const jsonLd = {
 
           try {
             await navigator.clipboard.writeText(text);
-            copyBtn.classList.add('copied');
+            copyBtn.classList.add('active-state');
             if (btnText) btnText.textContent = 'Copied! ✓';
 
             setTimeout(() => {
-              copyBtn.classList.remove('copied');
+              copyBtn.classList.remove('active-state');
               if (btnText) btnText.textContent = 'Copy';
             }, 2000);
           } catch (err) {
             console.error('Error copying to clipboard:', err);
+          }
+        });
+      }
+
+      // 2. Download docker-compose.yml
+      if (downloadBtn && dockerCode) {
+        downloadBtn.addEventListener('click', () => {
+          const text = dockerCode.innerText.trim();
+          const blob = new Blob([text], { type: 'text/yaml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${toolName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-compose.yml`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        });
+      }
+
+      // 3. Share tool
+      if (shareBtn) {
+        shareBtn.addEventListener('click', async () => {
+          const shareData = {
+            title: `${toolName} | SelfHostDeck`,
+            text: `Check out the Docker Compose configuration for ${toolName} on SelfHostDeck:`,
+            url: window.location.href,
+          };
+
+          const btnText = shareBtn.querySelector('.btn-text');
+
+          if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            try {
+              await navigator.share(shareData);
+            } catch (err) {}
+          } else {
+            try {
+              await navigator.clipboard.writeText(window.location.href);
+              shareBtn.classList.add('active-state');
+              if (btnText) btnText.textContent = 'Link copied! ✓';
+
+              setTimeout(() => {
+                shareBtn.classList.remove('active-state');
+                if (btnText) btnText.textContent = 'Share';
+              }, 2000);
+            } catch (err) {
+              console.error('Error copying link:', err);
+            }
           }
         });
       }

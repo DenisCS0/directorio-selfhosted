@@ -34,7 +34,7 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Docker Compose Stacker | Multi-Container Generator | SelfHostDeck</title>
-    <meta name="description" content="Combine multiple open-source applications into a single production-ready docker-compose.yml file. Automatic port conflict detection." />
+    <meta name="description" content="Combine multiple open-source applications into a single production-ready docker-compose.yml file and automatically generate a secure, linked .env file." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href="https://selfhostdeck.com/en/stacker" />
 
@@ -43,7 +43,7 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
     <link rel="alternate" hreflang="en" href="https://selfhostdeck.com/en/stacker" />
     <link rel="alternate" hreflang="x-default" href="https://selfhostdeck.com/en/stacker" />
 
-    <!-- Cargador de JS-YAML con ID para control de carga -->
+    <!-- JS-YAML CDN Loader -->
     <script id="jsyaml-cdn" src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 
     <style is:global>
@@ -79,7 +79,6 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
       }
       a.volver:hover { text-decoration: underline; }
 
-      /* Selector de idioma ES / EN */
       .lang-switch {
         display: inline-flex;
         background: #1e293b;
@@ -119,7 +118,6 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
         margin: 0;
       }
 
-      /* Grid principal */
       .stacker-grid {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -195,7 +193,6 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
       .tools-list::-webkit-scrollbar-track { background: #090d16; }
       .tools-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 
-      /* Tarjeta de cada herramienta */
       .tool-item {
         background: #172236;
         border: 1px solid #2b3a51;
@@ -233,7 +230,6 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
         margin-top: 0.2rem;
       }
 
-      /* Botón de añadir/quitar */
       .btn-add {
         display: inline-flex;
         align-items: center;
@@ -348,20 +344,56 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
         justify-content: space-between;
         align-items: center;
         background: #131d2e;
-        padding: 0.65rem 1rem;
+        padding: 0.5rem 0.85rem;
         border-bottom: 1px solid #233147;
       }
 
-      .yaml-title {
-        font-family: ui-monospace, monospace;
-        font-size: 0.85rem;
+      /* Pestañas intercambiables */
+      .code-tabs {
+        display: inline-flex;
+        gap: 0.35rem;
+        background: #090d16;
+        padding: 0.2rem;
+        border-radius: 6px;
+        border: 1px solid #1e293b;
+      }
+
+      .tab-btn {
+        background: transparent;
+        border: none;
         color: #94a3b8;
-        white-space: nowrap;
+        font-family: ui-monospace, monospace;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.28rem 0.6rem;
+        border-radius: 4px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: all 0.15s ease;
+      }
+
+      .tab-btn:hover {
+        color: #ffffff;
+      }
+
+      .tab-btn.active {
+        background: #1e293b;
+        color: #38bdf8;
+      }
+
+      .tab-badge {
+        background: #0369a1;
+        color: #ffffff;
+        font-size: 0.65rem;
+        padding: 0.05rem 0.35rem;
+        border-radius: 9999px;
       }
 
       .yaml-actions {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.45rem;
       }
 
       .btn-action {
@@ -387,35 +419,23 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
         font-size: 0.82rem;
         color: #7dd3fc;
         line-height: 1.5;
+        white-space: pre;
       }
 
-      /* Mobile Responsive Optimizations (< 640px) */
+      /* Optimizaciones responsivas móvil */
       @media (max-width: 640px) {
-        body {
-          padding: 1.25rem 0.85rem;
-        }
-
-        .panel {
-          padding: 1rem;
-        }
-
-        .sticky-panel {
-          position: static;
-        }
-
+        body { padding: 1.25rem 0.85rem; }
+        .panel { padding: 1rem; }
+        .sticky-panel { position: static; }
         .yaml-header {
           flex-direction: column;
           align-items: stretch;
           gap: 0.65rem;
           padding: 0.75rem;
         }
-
-        .yaml-actions {
-          display: flex;
-          gap: 0.35rem;
-          width: 100%;
-        }
-
+        .code-tabs { width: 100%; }
+        .tab-btn { flex: 1; justify-content: center; }
+        .yaml-actions { display: flex; gap: 0.35rem; width: 100%; }
         .btn-action {
           flex: 1;
           text-align: center;
@@ -463,7 +483,7 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
           <div class="tools-list" id="toolsContainer"></div>
         </div>
 
-        <!-- Right Panel: YAML Output -->
+        <!-- Right Panel: Code Viewer -->
         <div class="sticky-panel">
           <div class="panel">
             <div class="stack-header-row">
@@ -479,14 +499,19 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
 
             <div class="yaml-container">
               <div class="yaml-header">
-                <span class="yaml-title">docker-compose.yml</span>
+                <!-- Tab Controls -->
+                <div class="code-tabs">
+                  <button type="button" class="tab-btn active" id="tabYaml">docker-compose.yml</button>
+                  <button type="button" class="tab-btn" id="tabEnv">.env <span id="envBadge" class="tab-badge">0</span></button>
+                </div>
+
                 <div class="yaml-actions">
-                  <button class="btn-action" id="btnShare">Share link</button>
+                  <button class="btn-action" id="btnShare">Share</button>
                   <button class="btn-action" id="btnDownload">Download</button>
                   <button class="btn-action" id="btnCopy">Copy</button>
                 </div>
               </div>
-              <pre class="yaml-code"><code id="yamlOutput"># Select tools from the left panel to compose your stack.</code></pre>
+              <pre class="yaml-code"><code id="codeOutput"># Select tools from the left panel to compose your stack.</code></pre>
             </div>
           </div>
         </div>
@@ -502,10 +527,13 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
       let selectedSlugs = new Set();
       let currentCategory = 'all';
       let searchQuery = '';
+      let activeTab = 'yaml'; // 'yaml' | 'env'
+      let currentYaml = '';
+      let currentEnv = '';
 
       const toolsContainer = document.getElementById('toolsContainer');
       const selectedChips = document.getElementById('selectedChips');
-      const yamlOutput = document.getElementById('yamlOutput');
+      const codeOutput = document.getElementById('codeOutput');
       const collisionAlert = document.getElementById('collisionAlert');
       const searchInput = document.getElementById('searchInput');
       const categoryFilters = document.getElementById('categoryFilters');
@@ -513,6 +541,137 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
       const btnDownload = document.getElementById('btnDownload');
       const btnShare = document.getElementById('btnShare');
       const btnClearStack = document.getElementById('btnClearStack');
+      const tabYaml = document.getElementById('tabYaml');
+      const tabEnv = document.getElementById('tabEnv');
+      const envBadge = document.getElementById('envBadge');
+
+      function generarPasswordSegura(longitud = 20) {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_';
+        const array = new Uint8Array(longitud);
+        window.crypto.getRandomValues(array);
+        return Array.from(array, byte => chars[byte % chars.length]).join('');
+      }
+
+      function extraerEnvAutomatico(finalStack) {
+        if (!finalStack.services || Object.keys(finalStack.services).length === 0) {
+          return { texto: '# No environment variables required.', total: 0 };
+        }
+
+        const envPorServicio = {};
+        const clavesContrasena = /(password|secret|key|token|auth|salt|hash)/i;
+        let totalCount = 0;
+
+        // Shared database passwords registry
+        const sharedPasswords = {
+          postgres: null,
+          mysql: null,
+          redis: null
+        };
+
+        function resolverPassword(clave) {
+          const k = clave.toLowerCase();
+
+          // PostgreSQL bound variables
+          if (k.includes('postgres')) {
+            if (!sharedPasswords.postgres) {
+              sharedPasswords.postgres = generarPasswordSegura();
+            }
+            return sharedPasswords.postgres;
+          }
+
+          // MySQL / MariaDB bound variables
+          if (k.includes('mysql') || k.includes('mariadb')) {
+            if (!sharedPasswords.mysql) {
+              sharedPasswords.mysql = generarPasswordSegura();
+            }
+            return sharedPasswords.mysql;
+          }
+
+          // Redis bound variables
+          if (k.includes('redis')) {
+            if (!sharedPasswords.redis) {
+              sharedPasswords.redis = generarPasswordSegura();
+            }
+            return sharedPasswords.redis;
+          }
+
+          // Generic database password when postgres is present
+          if (k.includes('db_password') || k.includes('database_password')) {
+            if (finalStack.services.postgres || finalStack.services.db) {
+              if (!sharedPasswords.postgres) {
+                sharedPasswords.postgres = generarPasswordSegura();
+              }
+              return sharedPasswords.postgres;
+            }
+          }
+
+          // Standalone cryptographic secrets (JWT, SECRET_KEY, ENCRYPTION_KEY...)
+          return generarPasswordSegura();
+        }
+
+        for (const [servicio, def] of Object.entries(finalStack.services)) {
+          const varsServicio = {};
+
+          if (def.environment) {
+            if (Array.isArray(def.environment)) {
+              def.environment.forEach(item => {
+                const [k, ...v] = String(item).split('=');
+                if (k) varsServicio[k.trim()] = v.join('=').trim();
+              });
+            } else if (typeof def.environment === 'object') {
+              Object.entries(def.environment).forEach(([k, v]) => {
+                varsServicio[k] = String(v ?? '');
+              });
+            }
+          }
+
+          const stringDef = JSON.stringify(def);
+          const coincidencias = stringDef.matchAll(/\$\{([A-Z0-9_]+)(?::-([^}]*))?\}/gi);
+          for (const match of coincidencias) {
+            const varName = match[1];
+            const defaultVal = match[2] || '';
+            if (varsServicio[varName] === undefined) {
+              varsServicio[varName] = defaultVal;
+            }
+          }
+
+          for (const [clave, valor] of Object.entries(varsServicio)) {
+            const esPassword = clavesContrasena.test(clave);
+            const esPlaceholder = !valor || ['password', 'changeme', 'secret', 'admin', 'tu_clave'].includes(valor.toLowerCase());
+
+            if (esPassword && esPlaceholder) {
+              varsServicio[clave] = resolverPassword(clave);
+            }
+          }
+
+          const totalVars = Object.keys(varsServicio).length;
+          if (totalVars > 0) {
+            envPorServicio[servicio] = varsServicio;
+            totalCount += totalVars;
+          }
+        }
+
+        if (totalCount === 0) {
+          return { texto: '# This stack does not require mandatory environment variables.', total: 0 };
+        }
+
+        let lineas = [
+          '# ========================================================',
+          '# Environment variables autogenerated by SelfHostDeck',
+          '# Passwords and cryptographic keys generated on the fly.',
+          '# ========================================================\n'
+        ];
+
+        for (const [servicio, vars] of Object.entries(envPorServicio)) {
+          lineas.push(`# --- ${servicio.toUpperCase()} ---`);
+          for (const [k, v] of Object.entries(vars)) {
+            lineas.push(`${k}=${v}`);
+          }
+          lineas.push('');
+        }
+
+        return { texto: lineas.join('\n'), total: totalCount };
+      }
 
       function inicializarEstado() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -603,6 +762,16 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
         window.history.replaceState({}, '', url);
       }
 
+      function actualizarVisor() {
+        if (activeTab === 'yaml') {
+          codeOutput.textContent = currentYaml;
+          btnDownload.textContent = 'Download .yml';
+        } else {
+          codeOutput.textContent = currentEnv;
+          btnDownload.textContent = 'Download .env';
+        }
+      }
+
       function actualizarStack() {
         if (typeof jsyaml === 'undefined') {
           setTimeout(actualizarStack, 50);
@@ -614,8 +783,11 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
         selectedChips.innerHTML = '';
         if (selectedTools.length === 0) {
           selectedChips.innerHTML = '<span style="color: #64748b; font-size: 0.85rem;">No tools selected</span>';
-          yamlOutput.textContent = '# Select tools from the left panel to compose your stack.';
+          currentYaml = '# Select tools from the left panel to compose your stack.';
+          currentEnv = '# No environment variables.';
+          envBadge.textContent = '0';
           collisionAlert.style.display = 'none';
+          actualizarVisor();
           return;
         }
 
@@ -700,15 +872,36 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
         }
 
         try {
-          yamlOutput.textContent = jsyaml.dump(finalStack, {
+          currentYaml = jsyaml.dump(finalStack, {
             indent: 2,
             lineWidth: -1,
             noRefs: true
           });
         } catch (e) {
-          yamlOutput.textContent = '# Error structuring docker-compose.yml file';
+          currentYaml = '# Error structuring docker-compose.yml file';
         }
+
+        const envData = extraerEnvAutomatico(finalStack);
+        currentEnv = envData.texto;
+        envBadge.textContent = envData.total;
+
+        actualizarVisor();
       }
+
+      // Tab Events
+      tabYaml.addEventListener('click', () => {
+        activeTab = 'yaml';
+        tabYaml.classList.add('active');
+        tabEnv.classList.remove('active');
+        actualizarVisor();
+      });
+
+      tabEnv.addEventListener('click', () => {
+        activeTab = 'env';
+        tabEnv.classList.add('active');
+        tabYaml.classList.remove('active');
+        actualizarVisor();
+      });
 
       btnClearStack.addEventListener('click', () => {
         selectedSlugs.clear();
@@ -733,22 +926,29 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
 
       btnCopy.addEventListener('click', async () => {
         try {
-          await navigator.clipboard.writeText(yamlOutput.textContent);
+          const texto = activeTab === 'yaml' ? currentYaml : currentEnv;
+          await navigator.clipboard.writeText(texto);
+          const original = btnCopy.textContent;
           btnCopy.textContent = 'Copied! ✓';
           btnCopy.classList.add('copied');
           setTimeout(() => {
-            btnCopy.textContent = 'Copy';
+            btnCopy.textContent = original;
             btnCopy.classList.remove('copied');
           }, 2000);
         } catch (err) {}
       });
 
       btnDownload.addEventListener('click', () => {
-        const blob = new Blob([yamlOutput.textContent], { type: 'text/yaml;charset=utf-8' });
+        const esYaml = activeTab === 'yaml';
+        const contenido = esYaml ? currentYaml : currentEnv;
+        const nombreArchivo = esYaml ? 'docker-compose.yml' : '.env';
+        const mime = esYaml ? 'text/yaml;charset=utf-8' : 'text/plain;charset=utf-8';
+
+        const blob = new Blob([contenido], { type: mime });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'docker-compose.yml';
+        a.download = nombreArchivo;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -758,10 +958,10 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
       btnShare.addEventListener('click', async () => {
         try {
           await navigator.clipboard.writeText(window.location.href);
-          btnShare.textContent = 'Link copied! ✓';
+          btnShare.textContent = 'Copied! ✓';
           btnShare.classList.add('copied');
           setTimeout(() => {
-            btnShare.textContent = 'Share link';
+            btnShare.textContent = 'Share';
             btnShare.classList.remove('copied');
           }, 2000);
         } catch (err) {}

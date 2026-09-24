@@ -105,11 +105,14 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
       }
 
       h1 {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: #ffffff;
-        margin: 0 0 0.5rem 0;
-        letter-spacing: -0.025em;
+       font-size: 2.5rem;
+       font-weight: 800;
+       letter-spacing: -0.025em;
+       background: linear-gradient(to right, #38bdf8, #818cf8);
+       -webkit-background-clip: text;
+       -webkit-text-fill-color: transparent;
+       margin: 0 0 0.75rem 0;
+       line-height: 1.2;
       }
 
       p.sub {

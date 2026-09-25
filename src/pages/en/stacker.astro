@@ -34,7 +34,7 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Docker Compose Stacker | Multi-Container Generator | SelfHostDeck</title>
-    <meta name="description" content="Combine multiple open-source applications into a single production-ready docker-compose.yml file and automatically generate a secure, linked .env file." />
+    <meta name="description" content="Combine multiple open-source applications into a single production-ready docker-compose.yml file and calculate required hardware specifications." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href="https://selfhostdeck.com/en/stacker" />
 
@@ -105,14 +105,14 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
       }
 
       h1 {
-       font-size: 2.5rem;
-       font-weight: 800;
-       letter-spacing: -0.025em;
-       background: linear-gradient(to right, #38bdf8, #818cf8);
-       -webkit-background-clip: text;
-       -webkit-text-fill-color: transparent;
-       margin: 0 0 0.75rem 0;
-       line-height: 1.2;
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        background: linear-gradient(to right, #38bdf8, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0 0 0.75rem 0;
+        line-height: 1.2;
       }
 
       p.sub {
@@ -324,6 +324,89 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
       }
       .chip-remove:hover { color: #ffffff; }
 
+      /* ================================================= */
+      /* HARDWARE SIZER STYLES (Stack Calculator)          */
+      /* ================================================= */
+      .hardware-sizer {
+        background: #0c1524;
+        border: 1px solid #1e2e4a;
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+        margin-bottom: 1rem;
+        display: none;
+      }
+
+      .sizer-grid {
+        display: grid;
+        grid-template-columns: auto auto 1fr;
+        gap: 1.25rem;
+        align-items: center;
+      }
+
+      .sizer-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+
+      .sizer-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #94a3b8;
+        font-weight: 600;
+      }
+
+      .sizer-val-ram {
+        font-family: ui-monospace, monospace;
+        font-weight: 700;
+        color: #38bdf8;
+        font-size: 0.95rem;
+      }
+
+      .sizer-badge-arm {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.15rem 0.55rem;
+        border-radius: 6px;
+        white-space: nowrap;
+      }
+
+      .sizer-badge-arm.ok {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+
+      .sizer-badge-arm.warn {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
+      .sizer-val-hw {
+        font-size: 0.82rem;
+        color: #e2e8f0;
+        font-weight: 500;
+        line-height: 1.3;
+      }
+
+      @media (max-width: 640px) {
+        .sizer-grid {
+          grid-template-columns: 1fr 1fr;
+          gap: 0.75rem;
+        }
+        .sizer-item.full-width {
+          grid-column: span 2;
+          border-top: 1px solid #1e293b;
+          padding-top: 0.6rem;
+        }
+      }
+      /* ================================================= */
+
       .alert-box {
         background: #450a0a;
         border: 1px solid #b91c1c;
@@ -351,7 +434,6 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
         border-bottom: 1px solid #233147;
       }
 
-      /* Pestañas intercambiables */
       .code-tabs {
         display: inline-flex;
         gap: 0.35rem;
@@ -377,9 +459,7 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
         transition: all 0.15s ease;
       }
 
-      .tab-btn:hover {
-        color: #ffffff;
-      }
+      .tab-btn:hover { color: #ffffff; }
 
       .tab-btn.active {
         background: #1e293b;
@@ -425,7 +505,6 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
         white-space: pre;
       }
 
-      /* Optimizaciones responsivas móvil */
       @media (max-width: 640px) {
         body { padding: 1.25rem 0.85rem; }
         .panel { padding: 1rem; }
@@ -486,7 +565,7 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
           <div class="tools-list" id="toolsContainer"></div>
         </div>
 
-        <!-- Right Panel: Code Viewer -->
+        <!-- Right Panel: Code Viewer and Hardware Sizer -->
         <div class="sticky-panel">
           <div class="panel">
             <div class="stack-header-row">
@@ -496,6 +575,24 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
 
             <div class="selected-chips" id="selectedChips">
               <span style="color: #64748b; font-size: 0.85rem;">No tools selected</span>
+            </div>
+
+            <!-- Hardware Sizer Bar -->
+            <div class="hardware-sizer" id="hardwareSizer">
+              <div class="sizer-grid">
+                <div class="sizer-item">
+                  <span class="sizer-label">Min. RAM</span>
+                  <span class="sizer-val-ram" id="sizerRam">0 MB</span>
+                </div>
+                <div class="sizer-item">
+                  <span class="sizer-label">Architecture</span>
+                  <div id="sizerArch"></div>
+                </div>
+                <div class="sizer-item full-width">
+                  <span class="sizer-label">Suggested Hardware</span>
+                  <span class="sizer-val-hw" id="sizerHw">--</span>
+                </div>
+              </div>
             </div>
 
             <div class="alert-box" id="collisionAlert"></div>
@@ -548,11 +645,77 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
       const tabEnv = document.getElementById('tabEnv');
       const envBadge = document.getElementById('envBadge');
 
+      // Hardware Sizer DOM elements
+      const hardwareSizer = document.getElementById('hardwareSizer');
+      const sizerRam = document.getElementById('sizerRam');
+      const sizerArch = document.getElementById('sizerArch');
+      const sizerHw = document.getElementById('sizerHw');
+
       function generarPasswordSegura(longitud = 20) {
         const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_';
         const array = new Uint8Array(longitud);
         window.crypto.getRandomValues(array);
         return Array.from(array, byte => chars[byte % chars.length]).join('');
+      }
+
+      function parseRamToMb(val) {
+        if (!val && val !== 0) return 256;
+        if (typeof val === 'number') return val;
+        const str = String(val).toLowerCase();
+        const num = parseFloat(str.replace(/[^0-9.]/g, ''));
+        if (isNaN(num)) return 256;
+        if (str.includes('gb') || str.includes('g')) return Math.round(num * 1024);
+        return Math.round(num);
+      }
+
+      function actualizarHardwareSizer(selectedTools) {
+        if (selectedTools.length === 0) {
+          hardwareSizer.style.display = 'none';
+          return;
+        }
+
+        hardwareSizer.style.display = 'block';
+
+        // 1. Calculate estimated total RAM from ram_mb
+        const totalMb = selectedTools.reduce((acc, t) => {
+          const ramVal = t.ram_mb ?? t.ram ?? t.consumo_ram ?? t.ram_usage ?? t.memoria;
+          return acc + parseRamToMb(ramVal);
+        }, 0);
+
+        if (totalMb >= 1024) {
+          sizerRam.textContent = `~${(totalMb / 1024).toFixed(1)} GB`;
+        } else {
+          sizerRam.textContent = `~${totalMb} MB`;
+        }
+
+        // 2. Verify ARM64 / Raspberry Pi compatibility from compatible_arm
+        const allSupportArm = selectedTools.every((t) => {
+          const val = t.compatible_arm ?? t.arm64 ?? t.is_arm64 ?? t.arm;
+          if (val === true || val === 1) return true;
+          if (!val || val === false || val === 0) return false;
+          const str = String(val).toLowerCase().trim();
+          return str === 'true' || str.includes('arm') || str === 'si' || str === 'sí' || str === 'yes';
+        });
+
+        if (allSupportArm) {
+          sizerArch.innerHTML = '<span class="sizer-badge-arm ok">✓ ARM64 / Pi</span>';
+        } else {
+          sizerArch.innerHTML = '<span class="sizer-badge-arm warn">⚠️ Requires x86_64</span>';
+        }
+
+        // 3. Contextual hardware recommendation in English
+        let rec = '';
+        if (totalMb <= 1024) {
+          rec = allSupportArm ? 'Raspberry Pi 3/4 (2 GB) or Entry Mini-PC' : 'Entry-level Mini-PC / x86 Thin Client';
+        } else if (totalMb <= 3500) {
+          rec = allSupportArm ? 'Raspberry Pi 4/5 (4-8 GB) or Intel N100' : 'Intel N100 Mini-PC / 8 GB RAM';
+        } else if (totalMb <= 7500) {
+          rec = 'Mid-tier Mini-PC / Homelab Tower (8-16 GB RAM)';
+        } else {
+          rec = 'Dedicated Server / Advanced Homelab (16+ GB RAM)';
+        }
+
+        sizerHw.textContent = rec;
       }
 
       function extraerEnvAutomatico(finalStack) {
@@ -564,7 +727,6 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
         const clavesContrasena = /(password|secret|key|token|auth|salt|hash)/i;
         let totalCount = 0;
 
-        // Shared database passwords registry
         const sharedPasswords = {
           postgres: null,
           mysql: null,
@@ -573,42 +735,24 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
 
         function resolverPassword(clave) {
           const k = clave.toLowerCase();
-
-          // PostgreSQL bound variables
           if (k.includes('postgres')) {
-            if (!sharedPasswords.postgres) {
-              sharedPasswords.postgres = generarPasswordSegura();
-            }
+            if (!sharedPasswords.postgres) sharedPasswords.postgres = generarPasswordSegura();
             return sharedPasswords.postgres;
           }
-
-          // MySQL / MariaDB bound variables
           if (k.includes('mysql') || k.includes('mariadb')) {
-            if (!sharedPasswords.mysql) {
-              sharedPasswords.mysql = generarPasswordSegura();
-            }
+            if (!sharedPasswords.mysql) sharedPasswords.mysql = generarPasswordSegura();
             return sharedPasswords.mysql;
           }
-
-          // Redis bound variables
           if (k.includes('redis')) {
-            if (!sharedPasswords.redis) {
-              sharedPasswords.redis = generarPasswordSegura();
-            }
+            if (!sharedPasswords.redis) sharedPasswords.redis = generarPasswordSegura();
             return sharedPasswords.redis;
           }
-
-          // Generic database password when postgres is present
           if (k.includes('db_password') || k.includes('database_password')) {
             if (finalStack.services.postgres || finalStack.services.db) {
-              if (!sharedPasswords.postgres) {
-                sharedPasswords.postgres = generarPasswordSegura();
-              }
+              if (!sharedPasswords.postgres) sharedPasswords.postgres = generarPasswordSegura();
               return sharedPasswords.postgres;
             }
           }
-
-          // Standalone cryptographic secrets (JWT, SECRET_KEY, ENCRYPTION_KEY...)
           return generarPasswordSegura();
         }
 
@@ -783,6 +927,9 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
 
         const selectedTools = window.ALL_TOOLS.filter((t) => selectedSlugs.has(t.slug));
 
+        // Update hardware estimations
+        actualizarHardwareSizer(selectedTools);
+
         selectedChips.innerHTML = '';
         if (selectedTools.length === 0) {
           selectedChips.innerHTML = '<span style="color: #64748b; font-size: 0.85rem;">No tools selected</span>';
@@ -891,7 +1038,6 @@ const categorias = [...new Set(herramientasDisponibles.map((h) => h.categoria))]
         actualizarVisor();
       }
 
-      // Tab Events
       tabYaml.addEventListener('click', () => {
         activeTab = 'yaml';
         tabYaml.classList.add('active');

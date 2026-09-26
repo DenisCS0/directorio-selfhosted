@@ -361,17 +361,55 @@ const jsonLd = {
         tab-size: 2;
       }
 
+      /* Contenedor flexible de llamadas a la acción */
+      .actions-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        align-items: center;
+        margin: 1.5rem 0;
+      }
+
       .btn {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
         background: #0284c7;
         color: white;
         text-decoration: none;
-        padding: 0.75rem 1.5rem;
+        padding: 0.75rem 1.4rem;
         border-radius: 8px;
         font-weight: 600;
-        transition: background-color 0.2s;
+        font-size: 0.95rem;
+        transition: background-color 0.2s ease, transform 0.15s ease;
       }
-      .btn:hover { background: #0369a1; }
+      .btn:hover { 
+        background: #0369a1; 
+        transform: translateY(-1px);
+      }
+
+      /* Estilos para el botón de Demo en vivo */
+      .btn-demo {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        background: rgba(16, 185, 129, 0.12);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        text-decoration: none;
+        padding: 0.75rem 1.4rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+      }
+      .btn-demo:hover {
+        background: #059669;
+        color: #ffffff;
+        border-color: #059669;
+        box-shadow: 0 0 16px rgba(5, 150, 105, 0.35);
+        transform: translateY(-1px);
+      }
 
       .related-section {
         margin-top: 3.5rem;
@@ -551,9 +589,29 @@ const jsonLd = {
       </div>
     )}
 
-    <a href={item.url_repo} target="_blank" rel="noopener noreferrer" class="btn">
-      Ver código en GitHub &rarr;
-    </a>
+    <!-- Fila de enlaces principales de acción -->
+    <div class="actions-row">
+      <a href={item.url_repo} target="_blank" rel="noopener noreferrer" class="btn">
+        Ver código en GitHub &rarr;
+      </a>
+
+      {item.demo_url && (
+        <a 
+          href={item.demo_url} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          class="btn-demo"
+          title={`Probar demo interactiva de ${item.nombre}`}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          <span>Probar demo en vivo ↗</span>
+        </a>
+      )}
+    </div>
 
     {related.length > 0 && (
       <section class="related-section">

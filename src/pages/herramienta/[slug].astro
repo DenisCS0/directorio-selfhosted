@@ -73,6 +73,7 @@ const jsonLd = {
   "operatingSystem": "Linux, Docker",
   "applicationCategory": item.categoria,
   "description": item.descripcion,
+  ...(item.imagen_url && item.imagen_url.startsWith('http') ? { "image": item.imagen_url } : {}),
   "offers": {
     "@type": "Offer",
     "price": "0",
@@ -234,9 +235,26 @@ const jsonLd = {
       .sub { 
         color: #94a3b8; 
         font-size: 1.1rem; 
-        margin-bottom: 2rem; 
+        margin-bottom: 1.5rem; 
       }
       .sub strong { color: #f59e0b; }
+
+      /* Contenedor de la captura de pantalla */
+      .tool-preview-container {
+        margin: 0 0 2rem 0;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #233147;
+        background: #090d16;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.45);
+      }
+
+      .tool-preview-img {
+        width: 100%;
+        height: auto;
+        display: block;
+        object-fit: cover;
+      }
 
       .box { 
         background: #1e293b; 
@@ -570,6 +588,19 @@ const jsonLd = {
         Alternativa open-source a <strong>{item.saas_alternativa}</strong> · ⭐ {item.estrellas} estrellas
       </p>
     </div>
+
+    {/* Captura de pantalla oficial o preview */}
+    {item.imagen_url && item.imagen_url.startsWith('http') && (
+      <div class="tool-preview-container">
+        <img 
+          src={item.imagen_url} 
+          alt={`Captura de pantalla e interfaz de ${item.nombre}`} 
+          loading="lazy"
+          decoding="async"
+          class="tool-preview-img"
+        />
+      </div>
+    )}
 
     <div class="box">
       <h2>Descripción y propósito</h2>

@@ -1,0 +1,517 @@
+---
+interface Props {
+  toolA: any;
+  toolB: any;
+  lang: "es" | "en";
+}
+
+const { toolA, toolB, lang } = Astro.props;
+const es = lang === "es";
+
+function toSlugLocal(texto: string = "") {
+  return texto
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+const slugA = toolA.slug || toSlugLocal(toolA.nombre);
+const slugB = toolB.slug || toSlugLocal(toolB.nombre);
+const [primero, segundo] = slugA < slugB ? [slugA, slugB] : [slugB, slugA];
+const vsSlug = `${primero}-vs-${segundo}`;
+
+const urlEs = `/vs/${vsSlug}`;
+const urlEn = `/en/vs/${vsSlug}`;
+
+const urlToolA = es ? `/herramienta/${slugA}` : `/en/herramienta/${slugA}`;
+const urlToolB = es ? `/herramienta/${slugB}` : `/en/herramienta/${slugB}`;
+
+const titleSEO = es
+  ? `${toolA.nombre} vs ${toolB.nombre} | Comparativa Self-Hosted`
+  : `${toolA.nombre} vs ${toolB.nombre} | Self-Hosted Comparison`;
+
+const descSEO = es
+  ? `¿Cuál elegir entre ${toolA.nombre} y ${toolB.nombre}? Compara consumo de RAM, Docker Compose, características y alternativas.`
+  : `Compare ${toolA.nombre} vs ${toolB.nombre}. In-depth comparison of RAM usage, Docker Compose configs, and self-hosted features.`;
+
+function formatRam(mb: number | undefined | null) {
+  const val = mb || 512;
+  return val >= 1024 ? `${val / 1024} GB` : `${val} MB`;
+}
+
+function formatDificultad(diff: string = "", isEs: boolean) {
+  const d = (diff || "").toLowerCase();
+  if (isEs) return diff || "Media";
+
+  if (d.includes("baja") || d.includes("facil") || d.includes("fácil") || d.includes("easy")) {
+    return "Easy";
+  }
+  if (d.includes("alta") || d.includes("dificil") || d.includes("difícil") || d.includes("hard")) {
+    return "Hard";
+  }
+  return "Medium";
+}
+
+// Formateo y traducción del mensaje cuando no incluye docker-compose oficial
+function formatDockerCompose(compose: string = "", urlRepo: string = "", isEs: boolean) {
+  if (!compose) return "";
+  if (!isEs && compose.includes("Este proyecto no incluye un archivo docker-compose")) {
+    return `# This project does not include an official docker-compose file in the repository root.
+# Check the official installation instructions at:
+# ${urlRepo || "https://github.com"}`;
+  }
+  return compose;
+}
+
+const txt = {
+  volver: es ? "← Volver" : "← Back",
+  catalogo: es ? "Catálogo" : "Catalog",
+  ram: es ? "Consumo de RAM" : "RAM Usage",
+  arm: es ? "Soporte ARM64" : "ARM64 Support",
+  estrellas: es ? "Estrellas en GitHub" : "GitHub Stars",
+  puerto: es ? "Puerto por defecto" : "Default Port",
+  dificultad: es ? "Dificultad Docker" : "Docker Setup",
+  demo: es ? "Demo interactiva" : "Live Demo",
+  repo: es ? "Repositorio GitHub" : "GitHub Repo",
+  probar: es ? "Probar en vivo ↗" : "Try live demo ↗",
+  noDisponible: es ? "No disponible" : "Not available",
+  si: es ? "Sí" : "Yes",
+  composeTitle: es ? "Comparativa de Docker Compose" : "Docker Compose Comparison",
+  verFicha: es ? "Ver ficha completa →" : "View full profile →"
+};
+---
+
+<!DOCTYPE html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{titleSEO}</title>
+    <meta name="description" content={descSEO} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="canonical" href={`https://selfhostdeck.com${es ? urlEs : urlEn}`} />
+    <link rel="alternate" hreflang="es" href={`https://selfhostdeck.com${urlEs}`} />
+    <link rel="alternate" hreflang="en" href={`https://selfhostdeck.com${urlEn}`} />
+    <link rel="alternate" hreflang="x-default" href={`https://selfhostdeck.com${urlEn}`} />
+
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        max-width: 950px;
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem;
+        line-height: 1.6;
+      }
+      .top-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+      .nav-left {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        line-height: 1;
+      }
+      a.volver {
+        color: #38bdf8;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+      }
+      a.volver:hover { 
+        text-decoration: underline; 
+      }
+      .nav-divider {
+        color: #475569;
+        font-size: 0.75rem;
+        line-height: 1;
+        user-select: none;
+        display: inline-flex;
+        align-items: center;
+      }
+      .nav-catalog-link {
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        transition: color 0.15s ease;
+      }
+      .nav-catalog-link:hover {
+        color: #f1f5f9;
+        text-decoration: underline;
+      }
+      .lang-switch {
+        display: inline-flex;
+        align-items: center;
+        background: #131d31;
+        border: 1px solid #334155;
+        border-radius: 9999px;
+        padding: 0.2rem 0.5rem;
+        gap: 0.35rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+      .lang-switch a {
+        color: #94a3b8;
+        text-decoration: none;
+        padding: 0.25rem 0.6rem;
+        border-radius: 9999px;
+      }
+      .lang-switch a.active {
+        background: #0284c7;
+        color: #ffffff;
+      }
+      .header-vs {
+        text-align: center;
+        margin: 2rem 0 3rem 0;
+      }
+      .category-pill {
+        display: inline-block;
+        background: #0369a1;
+        color: #bae6fd;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.3rem 0.8rem;
+        border-radius: 9999px;
+        margin-bottom: 1rem;
+      }
+      h1 {
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: #ffffff;
+        margin: 0 0 0.5rem 0;
+      }
+      .vs-span { color: #f59e0b; margin: 0 0.5rem; font-size: 1.8rem; }
+      .sub { color: #94a3b8; font-size: 1rem; max-width: 600px; margin: 0 auto; }
+
+      .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+      }
+      .preview-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+      }
+      .preview-card h2 {
+        margin: 0 0 0.75rem 0;
+        font-size: 1.25rem;
+        color: #38bdf8;
+      }
+      .preview-img-wrap {
+        width: 100%;
+        height: 190px;
+        background: #090d16;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #233147;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .preview-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .preview-desc {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin-top: 0.85rem;
+        line-height: 1.5;
+        margin-bottom: 0.85rem;
+      }
+      .profile-link {
+        margin-top: auto;
+        color: #38bdf8;
+        text-decoration: none;
+        font-size: 0.82rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: color 0.15s ease;
+      }
+      .profile-link:hover {
+        color: #7dd3fc;
+        text-decoration: underline;
+      }
+
+      .table-box {
+        background: #131d31;
+        border: 1px solid #233147;
+        border-radius: 12px;
+        overflow-x: auto;
+        margin-bottom: 3rem;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.9rem;
+      }
+      th, td {
+        padding: 0.85rem 1.25rem;
+        border-bottom: 1px solid #233147;
+      }
+      th {
+        background: #0c1424;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      th.tool-col { color: #38bdf8; font-size: 0.95rem; }
+      tr:last-child td { border-bottom: none; }
+      .row-label { font-weight: 600; color: #94a3b8; }
+      .code-badge {
+        font-family: ui-monospace, monospace;
+        color: #7dd3fc;
+      }
+
+      .compose-section {
+        margin-top: 3rem;
+      }
+      .compose-section h2 {
+        color: #ffffff;
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+      }
+      .compose-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+      }
+      .compose-card {
+        background: #090d16;
+        border: 1px solid #233147;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .compose-header {
+        background: #131d2e;
+        padding: 0.65rem 1rem;
+        border-bottom: 1px solid #233147;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #38bdf8;
+      }
+      pre {
+        margin: 0;
+        padding: 1rem;
+        font-family: ui-monospace, monospace;
+        font-size: 0.8rem;
+        color: #7dd3fc;
+        overflow-x: auto;
+        max-height: 380px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top-nav">
+      <div class="nav-left">
+        <a href={es ? "/" : "/en"} class="volver" id="btnVolver">
+          {txt.volver}
+        </a>
+        <span class="nav-divider">·</span>
+        <a href={es ? "/" : "/en"} class="nav-catalog-link">
+          {txt.catalogo}
+        </a>
+      </div>
+      <div class="lang-switch">
+        <a href={urlEs} class={es ? "active" : ""}>ES</a>
+        <span style="color: #334155;">/</span>
+        <a href={urlEn} class={!es ? "active" : ""}>EN</a>
+      </div>
+    </div>
+
+    <header class="header-vs">
+      <span class="category-pill">{es ? toolA.categoria : (toolA.categoria_en || toolA.categoria)}</span>
+      <h1>
+        <span>{toolA.nombre}</span>
+        <span class="vs-span">vs</span>
+        <span>{toolB.nombre}</span>
+      </h1>
+      <p class="sub">{descSEO}</p>
+    </header>
+
+    <div class="preview-grid">
+      <div class="preview-card">
+        <h2>{toolA.nombre}</h2>
+        <div class="preview-img-wrap">
+          {toolA.imagen_url && toolA.imagen_url.startsWith("http") ? (
+            <img src={toolA.imagen_url} alt={toolA.nombre} loading="lazy" />
+          ) : (
+            <span style="color: #64748b; font-size: 0.85rem;">{txt.noDisponible}</span>
+          )}
+        </div>
+        <p class="preview-desc">{es ? toolA.descripcion : (toolA.descripcion_en || toolA.descripcion)}</p>
+        <a href={urlToolA} class="profile-link">
+          {txt.verFicha}
+        </a>
+      </div>
+
+      <div class="preview-card">
+        <h2>{toolB.nombre}</h2>
+        <div class="preview-img-wrap">
+          {toolB.imagen_url && toolB.imagen_url.startsWith("http") ? (
+            <img src={toolB.imagen_url} alt={toolB.nombre} loading="lazy" />
+          ) : (
+            <span style="color: #64748b; font-size: 0.85rem;">{txt.noDisponible}</span>
+          )}
+        </div>
+        <p class="preview-desc">{es ? toolB.descripcion : (toolB.descripcion_en || toolB.descripcion)}</p>
+        <a href={urlToolB} class="profile-link">
+          {txt.verFicha}
+        </a>
+      </div>
+    </div>
+
+    <div class="table-box">
+      <table>
+        <thead>
+          <tr>
+            <th>Métrica / Feature</th>
+            <th class="tool-col">{toolA.nombre}</th>
+            <th class="tool-col">{toolB.nombre}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-label">{txt.ram}</td>
+            <td><strong>{formatRam(toolA.ram_mb)}</strong></td>
+            <td><strong>{formatRam(toolB.ram_mb)}</strong></td>
+          </tr>
+          <tr>
+            <td class="row-label">{txt.arm}</td>
+            <td>{toolA.compatible_arm !== false ? "✅ " + txt.si : "❌ No"}</td>
+            <td>{toolB.compatible_arm !== false ? "✅ " + txt.si : "❌ No"}</td>
+          </tr>
+          <tr>
+            <td class="row-label">{txt.estrellas}</td>
+            <td>⭐ {toolA.estrellas?.toLocaleString() || "N/A"}</td>
+            <td>⭐ {toolB.estrellas?.toLocaleString() || "N/A"}</td>
+          </tr>
+          <tr>
+            <td class="row-label">{txt.puerto}</td>
+            <td class="code-badge">{toolA.puerto_default || "—"}</td>
+            <td class="code-badge">{toolB.puerto_default || "—"}</td>
+          </tr>
+          <tr>
+            <td class="row-label">{txt.dificultad}</td>
+            <td>{formatDificultad(toolA.dificultad_docker, es)}</td>
+            <td>{formatDificultad(toolB.dificultad_docker, es)}</td>
+          </tr>
+          <tr>
+            <td class="row-label">{txt.demo}</td>
+            <td>
+              {toolA.demo_url ? (
+                <a href={toolA.demo_url} target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: none;">
+                  {txt.probar}
+                </a>
+              ) : (
+                <span style="color: #64748b;">{txt.noDisponible}</span>
+              )}
+            </td>
+            <td>
+              {toolB.demo_url ? (
+                <a href={toolB.demo_url} target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: none;">
+                  {txt.probar}
+                </a>
+              ) : (
+                <span style="color: #64748b;">{txt.noDisponible}</span>
+              )}
+            </td>
+          </tr>
+          <tr>
+            <td class="row-label">{txt.repo}</td>
+            <td>
+              <a href={toolA.url_repo} target="_blank" rel="noopener noreferrer" style="color: #94a3b8; text-decoration: none;">
+                GitHub ↗
+              </a>
+            </td>
+            <td>
+              <a href={toolB.url_repo} target="_blank" rel="noopener noreferrer" style="color: #94a3b8; text-decoration: none;">
+                GitHub ↗
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    {(toolA.docker_compose || toolB.docker_compose) && (
+      <section class="compose-section">
+        <h2>{txt.composeTitle}</h2>
+        <div class="compose-grid">
+          {toolA.docker_compose && (
+            <div class="compose-card">
+              <div class="compose-header">{toolA.nombre} (docker-compose.yml)</div>
+              <pre><code>{formatDockerCompose(toolA.docker_compose, toolA.url_repo, es)}</code></pre>
+            </div>
+          )}
+          {toolB.docker_compose && (
+            <div class="compose-card">
+              <div class="compose-header">{toolB.nombre} (docker-compose.yml)</div>
+              <pre><code>{formatDockerCompose(toolB.docker_compose, toolB.url_repo, es)}</code></pre>
+            </div>
+          )}
+        </div>
+      </section>
+    )}
+
+    <script is:inline>
+      const btnVolver = document.getElementById('btnVolver');
+
+      if (btnVolver) {
+        const ref = document.referrer;
+        const currentHost = window.location.host;
+        const isEs = document.documentElement.lang === 'es';
+
+        if (ref && ref.includes(currentHost) && !ref.includes('/vs/')) {
+          sessionStorage.setItem('vs_origen', ref);
+        } else if (!ref || !ref.includes(currentHost)) {
+          sessionStorage.removeItem('vs_origen');
+        }
+
+        const origen = sessionStorage.getItem('vs_origen');
+
+        if (origen) {
+          try {
+            const urlObj = new URL(origen);
+            if (isEs) {
+              urlObj.pathname = urlObj.pathname.replace(/^\/en(\/|$)/, '/');
+            } else {
+              if (!urlObj.pathname.startsWith('/en')) {
+                urlObj.pathname = ('/en/' + urlObj.pathname).replace(/\/+/g, '/');
+              }
+            }
+            btnVolver.href = urlObj.pathname + urlObj.search + urlObj.hash;
+          } catch (err) {
+            btnVolver.href = origen;
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

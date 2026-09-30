@@ -1,0 +1,79 @@
+---
+import { createClient } from "@supabase/supabase-js";
+import VsComparison from "../../components/VsComparison.astro";
+
+export async function getStaticPaths() {
+  const toSlug = (texto: string = "") =>
+    texto
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+  const parseSaas = (str: string = "") =>
+    str
+      .toLowerCase()
+      .split(/[,/|]/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 1);
+
+  const supabaseUrl = "https://lffmkpexmtjwtvlgvkcj.supabase.co";
+  const supabaseKey = "sb_publishable_2GbOzXCVwdEOeZj62jhTPA_cuWUn2Bs";
+  const client = createClient(supabaseUrl, supabaseKey);
+
+  const { data: herramientas, error } = await client
+    .from("herramientas")
+    .select("*");
+
+  if (error || !herramientas) return [];
+
+  const porSaas: Record<string, typeof herramientas> = {};
+  for (const h of herramientas) {
+    const listaSaas = parseSaas(h.saas_alternativa);
+    for (const saas of listaSaas) {
+      if (!porSaas[saas]) porSaas[saas] = [];
+      if (!porSaas[saas].some((item) => (item.id ? item.id === h.id : item.nombre === h.nombre))) {
+        porSaas[saas].push(h);
+      }
+    }
+  }
+
+  const paths = [];
+  const combinacionesVistas = new Set<string>();
+
+  for (const saas in porSaas) {
+    const lista = porSaas[saas];
+    if (lista.length < 2) continue;
+
+    for (let i = 0; i < lista.length; i++) {
+      for (let j = i + 1; j < lista.length; j++) {
+        const item1 = lista[i];
+        const item2 = lista[j];
+
+        const slug1 = item1.slug || toSlug(item1.nombre);
+        const slug2 = item2.slug || toSlug(item2.nombre);
+        if (slug1 === slug2) continue;
+
+        const [toolA, toolB] = slug1 < slug2 ? [item1, item2] : [item2, item1];
+        const slugA = toolA.slug || toSlug(toolA.nombre);
+        const slugB = toolB.slug || toSlug(toolB.nombre);
+        const comparison = `${slugA}-vs-${slugB}`;
+
+        if (!combinacionesVistas.has(comparison)) {
+          combinacionesVistas.add(comparison);
+          paths.push({
+            params: { comparison },
+            props: { toolA, toolB }
+          });
+        }
+      }
+    }
+  }
+
+  return paths;
+}
+
+const { toolA, toolB } = Astro.props;
+---
+
+<VsComparison toolA={toolA} toolB={toolB} lang="es" />

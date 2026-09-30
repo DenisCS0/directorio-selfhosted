@@ -13,13 +13,34 @@ export async function getStaticPaths() {
 
   const allTools = herramientas || [];
 
+  // Helper para desglosar "Google Photos, iCloud" en ["google photos", "icloud"]
+  const parseSaas = (str: string = '') =>
+    str
+      .toLowerCase()
+      .split(/[,/|]/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 1);
+
   return allTools.map((item) => {
+    const itemSaas = parseSaas(item.saas_alternativa);
+
+    // 1. RIVALES DIRECTOS VS: Solo herramientas que sustituyen el mismo SaaS comercial
+    const vsTools = allTools
+      .filter((h) => {
+        const isDifferent = h.id ? h.id !== item.id : h.nombre !== item.nombre;
+        if (!isDifferent) return false;
+        const otherSaas = parseSaas(h.saas_alternativa);
+        return itemSaas.some((s) => otherSaas.includes(s));
+      })
+      .sort((a, b) => (b.estrellas || 0) - (a.estrellas || 0))
+      .slice(0, 3);
+
+    // 2. Recomendaciones generales (con relleno si faltan para completar 3)
     const sameCategory = allTools
       .filter((h) => (h.id ? h.id !== item.id : h.nombre !== item.nombre) && h.categoria === item.categoria)
       .sort((a, b) => (b.estrellas || 0) - (a.estrellas || 0));
 
     let related = sameCategory.slice(0, 3);
-
     if (related.length < 3) {
       const remaining = allTools
         .filter((h) => (h.id ? h.id !== item.id : h.nombre !== item.nombre) && !related.some((r) => r.nombre === h.nombre))
@@ -30,12 +51,16 @@ export async function getStaticPaths() {
 
     return {
       params: { slug: item.slug || toSlug(item.nombre) },
-      props: { item, related },
+      props: {
+        item,
+        related,
+        vsTools // Solo herramientas que compiten contra el mismo SaaS
+      },
     };
   });
 }
 
-const { item, related = [] } = Astro.props;
+const { item, related = [], vsTools = [] } = Astro.props;
 
 if (!item) {
   return Astro.redirect('/');
@@ -239,7 +264,6 @@ const jsonLd = {
       }
       .sub strong { color: #f59e0b; }
 
-      /* Contenedor de la captura de pantalla */
       .tool-preview-container {
         margin: 0 0 2rem 0;
         border-radius: 12px;
@@ -290,7 +314,6 @@ const jsonLd = {
         font-weight: bold;
       }
 
-      /* Cheat sheet de acceso y credenciales */
       .cheatsheet-box {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -492,10 +515,70 @@ const jsonLd = {
         transform: translateY(-1px);
       }
 
-      .related-section {
+      /* Estilos para comparativas VS */
+      .vs-section {
         margin-top: 3.5rem;
         padding-top: 2rem;
         border-top: 1px solid #334155;
+      }
+
+      .vs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 0.85rem;
+      }
+
+      .vs-card {
+        background: #131d31;
+        border: 1px solid #233147;
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+        text-decoration: none;
+        color: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        font-size: 0.88rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+      }
+
+      .vs-card:hover {
+        border-color: #38bdf8;
+        background: #1e293b;
+        transform: translateY(-1px);
+      }
+
+      .vs-title {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+
+      .vs-badge {
+        color: #38bdf8;
+        font-size: 0.75rem;
+        font-weight: 800;
+      }
+
+      .vs-arrow {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .vs-card:hover .vs-arrow {
+        color: #38bdf8;
+      }
+
+      .related-section {
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #233147;
       }
 
       .related-header {
@@ -589,7 +672,6 @@ const jsonLd = {
       </p>
     </div>
 
-    {/* Captura de pantalla oficial o preview */}
     {item.imagen_url && item.imagen_url.startsWith('http') && (
       <div class="tool-preview-container">
         <img 
@@ -618,7 +700,6 @@ const jsonLd = {
       </div>
     )}
 
-    {/* Cheat sheet de acceso inicial y credenciales */}
     {(item.puerto_default || item.credenciales_default) && (
       <div class="cheatsheet-box">
         {item.puerto_default && (
@@ -668,7 +749,6 @@ const jsonLd = {
           </div>
 
           <div class="docker-actions">
-            <!-- Botón directo al Stacker con la herramienta preseleccionada -->
             <a
               href={`/stacker?tools=${currentSlug}`}
               class="tool-btn btn-stacker-cta"
@@ -718,7 +798,6 @@ const jsonLd = {
       </div>
     )}
 
-    <!-- Fila de enlaces principales de acción -->
     <div class="actions-row">
       <a href={item.url_repo} target="_blank" rel="noopener noreferrer" class="btn">
         Ver código en GitHub &rarr;
@@ -742,6 +821,30 @@ const jsonLd = {
       )}
     </div>
 
+    <!-- Sección de Comparativas VS (solo si hay herramientas que compiten contra el mismo SaaS) -->
+    {vsTools.length > 0 && (
+      <section class="vs-section">
+        <h3 class="related-header">Comparativas populares con {item.nombre}</h3>
+        <div class="vs-grid">
+          {vsTools.map((r: any) => {
+            const rSlug = r.slug || toSlug(r.nombre);
+            const [slugA, slugB] = currentSlug < rSlug ? [currentSlug, rSlug] : [rSlug, currentSlug];
+            const vsUrl = `/vs/${slugA}-vs-${slugB}`;
+
+            return (
+              <a href={vsUrl} class="vs-card">
+                <span class="vs-title">
+                  {item.nombre} <span class="vs-badge">VS</span> {r.nombre}
+                </span>
+                <span class="vs-arrow">Comparar &rarr;</span>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+    )}
+
+    <!-- Sección de herramientas recomendadas -->
     {related.length > 0 && (
       <section class="related-section">
         <h3 class="related-header">Otras herramientas recomendadas</h3>
@@ -837,7 +940,7 @@ const jsonLd = {
         });
       }
 
-      // Volver a la última página visitada
+      // 4. Volver a la última página visitada
       const btnVolver = document.getElementById('btnVolver');
       const paginaGuardada = sessionStorage.getItem('ultimaPaginaCatalogo');
 

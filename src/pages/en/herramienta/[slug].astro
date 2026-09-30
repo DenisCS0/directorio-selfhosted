@@ -13,13 +13,34 @@ export async function getStaticPaths() {
 
   const allTools = herramientas || [];
 
+  // Helper para desglosar "Google Photos, iCloud" en ["google photos", "icloud"]
+  const parseSaas = (str: string = '') =>
+    str
+      .toLowerCase()
+      .split(/[,/|]/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 1);
+
   return allTools.map((item) => {
+    const itemSaas = parseSaas(item.saas_alternativa);
+
+    // 1. RIVALES DIRECTOS VS: Solo herramientas que sustituyen el mismo SaaS comercial
+    const vsTools = allTools
+      .filter((h) => {
+        const isDifferent = h.id ? h.id !== item.id : h.nombre !== item.nombre;
+        if (!isDifferent) return false;
+        const otherSaas = parseSaas(h.saas_alternativa);
+        return itemSaas.some((s) => otherSaas.includes(s));
+      })
+      .sort((a, b) => (b.estrellas || 0) - (a.estrellas || 0))
+      .slice(0, 3);
+
+    // 2. Recomendaciones generales (con relleno si faltan para completar 3)
     const sameCategory = allTools
       .filter((h) => (h.id ? h.id !== item.id : h.nombre !== item.nombre) && h.categoria === item.categoria)
       .sort((a, b) => (b.estrellas || 0) - (a.estrellas || 0));
 
     let related = sameCategory.slice(0, 3);
-
     if (related.length < 3) {
       const remaining = allTools
         .filter((h) => (h.id ? h.id !== item.id : h.nombre !== item.nombre) && !related.some((r) => r.nombre === h.nombre))
@@ -30,12 +51,16 @@ export async function getStaticPaths() {
 
     return {
       params: { slug: item.slug || toSlug(item.nombre) },
-      props: { item, related },
+      props: {
+        item,
+        related,
+        vsTools // Solo herramientas que compiten contra el mismo SaaS
+      },
     };
   });
 }
 
-const { item, related = [] } = Astro.props;
+const { item, related = [], vsTools = [] } = Astro.props;
 
 if (!item) {
   return Astro.redirect('/en');
@@ -252,7 +277,6 @@ const jsonLd = {
       }
       .sub strong { color: #f59e0b; }
 
-      /* Tool UI preview container */
       .tool-preview-container {
         margin: 0 0 2rem 0;
         border-radius: 12px;
@@ -303,7 +327,6 @@ const jsonLd = {
         font-weight: bold;
       }
 
-      /* Deployment cheat sheet: Local Access and First Launch */
       .cheatsheet-box {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -431,7 +454,6 @@ const jsonLd = {
         color: #4ade80;
       }
 
-      /* Featured CTA for the Stacker */
       .tool-btn.btn-stacker-cta {
         background: rgba(56, 189, 248, 0.12);
         color: #38bdf8;
@@ -458,7 +480,6 @@ const jsonLd = {
         tab-size: 2;
       }
 
-      /* Flex container for primary action links */
       .actions-row {
         display: flex;
         flex-wrap: wrap;
@@ -485,7 +506,6 @@ const jsonLd = {
         transform: translateY(-1px);
       }
 
-      /* Live Demo Button Styles */
       .btn-demo {
         display: inline-flex;
         align-items: center;
@@ -508,10 +528,70 @@ const jsonLd = {
         transform: translateY(-1px);
       }
 
-      .related-section {
+      /* Estilos para comparativas VS */
+      .vs-section {
         margin-top: 3.5rem;
         padding-top: 2rem;
         border-top: 1px solid #334155;
+      }
+
+      .vs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 0.85rem;
+      }
+
+      .vs-card {
+        background: #131d31;
+        border: 1px solid #233147;
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+        text-decoration: none;
+        color: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        font-size: 0.88rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+      }
+
+      .vs-card:hover {
+        border-color: #38bdf8;
+        background: #1e293b;
+        transform: translateY(-1px);
+      }
+
+      .vs-title {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+
+      .vs-badge {
+        color: #38bdf8;
+        font-size: 0.75rem;
+        font-weight: 800;
+      }
+
+      .vs-arrow {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .vs-card:hover .vs-arrow {
+        color: #38bdf8;
+      }
+
+      .related-section {
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #233147;
       }
 
       .related-header {
@@ -605,7 +685,6 @@ const jsonLd = {
       </p>
     </div>
 
-    {/* Tool UI preview screenshot */}
     {item.imagen_url && item.imagen_url.startsWith('http') && (
       <div class="tool-preview-container">
         <img 
@@ -634,7 +713,6 @@ const jsonLd = {
       </div>
     )}
 
-    {/* Quick cheat sheet: Local Access and First Launch */}
     {(item.puerto_default || item.credenciales_default) && (
       <div class="cheatsheet-box">
         {item.puerto_default && (
@@ -686,7 +764,6 @@ const jsonLd = {
           </div>
 
           <div class="docker-actions">
-            <!-- Direct link to Stacker with current tool preselected -->
             <a
               href={`/en/stacker?tools=${currentSlug}`}
               class="tool-btn btn-stacker-cta"
@@ -736,7 +813,6 @@ const jsonLd = {
       </div>
     )}
 
-    <!-- Primary action links row -->
     <div class="actions-row">
       <a href={item.url_repo} target="_blank" rel="noopener noreferrer" class="btn">
         View code on GitHub &rarr;
@@ -751,7 +827,7 @@ const jsonLd = {
           title={`Try interactive demo of ${item.nombre}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="15 3 21 3 21 9"></polyline>
             <line x1="10" y1="14" x2="21" y2="3"></line>
           </svg>
@@ -760,6 +836,30 @@ const jsonLd = {
       )}
     </div>
 
+    <!-- Sección de Comparativas VS en inglés -->
+    {vsTools.length > 0 && (
+      <section class="vs-section">
+        <h3 class="related-header">Popular comparisons with {item.nombre}</h3>
+        <div class="vs-grid">
+          {vsTools.map((r: any) => {
+            const rSlug = r.slug || toSlug(r.nombre);
+            const [slugA, slugB] = currentSlug < rSlug ? [currentSlug, rSlug] : [rSlug, currentSlug];
+            const vsUrl = `/en/vs/${slugA}-vs-${slugB}`;
+
+            return (
+              <a href={vsUrl} class="vs-card">
+                <span class="vs-title">
+                  {item.nombre} <span class="vs-badge">VS</span> {r.nombre}
+                </span>
+                <span class="vs-arrow">Compare &rarr;</span>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+    )}
+
+    <!-- Sección de herramientas recomendadas -->
     {related.length > 0 && (
       <section class="related-section">
         <h3 class="related-header">Other recommended tools</h3>
